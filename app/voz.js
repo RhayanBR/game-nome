@@ -1,3 +1,5 @@
+import { pararSom, tocarSom } from "./sons";
+
 // Escolhe a voz em português do Brasil que soa mais natural.
 // A preferida é a do Chrome ("Google português do Brasil").
 let vozEscolhida = null;
@@ -34,7 +36,7 @@ export function vozBrasileira() {
 }
 
 // Voz alegre e devagar das brincadeiras.
-// Devolve { falar(texto, quandoTerminar), parar(), falando }.
+// Devolve { falar(texto, quandoTerminar), somEFala(bicho, texto, quandoTerminar), parar(), falando }.
 export function criarVoz(depois) {
   let falaAtual = 0;
   const estado = { falando: false };
@@ -66,7 +68,15 @@ export function criarVoz(depois) {
     depois(terminar, 2000 + texto.length * 150);
   };
 
+  // Primeiro o bicho faz o som dele, depois a voz fala a frase
+  estado.somEFala = (tipo, texto, quandoTerminar) => {
+    estado.falando = true;
+    falaAtual++; // cancela o aviso de "terminou" da fala anterior
+    tocarSom(tipo, (somFalado) => estado.falar(somFalado + texto, quandoTerminar));
+  };
+
   estado.parar = () => {
+    pararSom();
     falaAtual++;
     estado.falando = false;
     speechSynthesis.cancel();

@@ -1,5 +1,6 @@
 import { sortearBicho } from "./bichos";
 import { vozBrasileira } from "./voz";
+import { pararSom, tocarSom } from "./sons";
 
 // Toda a brincadeira roda direto no DOM (animações quadro a quadro e voz).
 // Devolve uma função de limpeza que para tudo e deixa a tela como no começo.
@@ -68,6 +69,13 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
 
     // Segurança: se o aparelho não tiver voz, libera depois de um tempo
     depois(terminar, 2000 + texto.length * 150);
+  }
+
+  // Primeiro o bicho faz o som dele, depois a voz fala a frase
+  function somEFala(tipo, texto, quandoTerminar) {
+    falando = true; // segura os toques enquanto o som toca
+    falaAtual++; // cancela o aviso de "terminou" da fala anterior
+    tocarSom(tipo, (somFalado) => falar(somFalado + texto, quandoTerminar));
   }
 
   // Explosão de emojis saindo de um ponto da tela
@@ -419,14 +427,16 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       // Se os 3 nomes estão completos, a festa da família começa
       // assim que a voz terminar de falar este nome
       const todosCompletos = itens.every((i) => i.classList.contains("completo"));
-      falar(
+      somEFala(
+        b.tipo,
         `${aee} ${b.tipo.pronome} devolveu ${oQue}! ${soletrado}... ${item.dataset.falar}`,
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
           : () => pedirProximaLetra(true)
       );
     } else {
-      falar(
+      somEFala(
+        b.tipo,
         `${aee} ${b.tipo.pronome} devolveu ${aLetra(b.pedaco)}! Tchau, ${b.tipo.so}!`,
         () => pedirProximaLetra(false)
       );
@@ -474,6 +484,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   // Limpeza: para voz, animações e timers e devolve o DOM ao estado inicial
   return () => {
     falaAtual++; // invalida qualquer fala em andamento
+    pararSom();
     speechSynthesis.cancel();
     modoFesta = false;
     clearInterval(intervaloDosFogos);

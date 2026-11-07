@@ -2,8 +2,9 @@ import { useEffect, useRef } from "react";
 import { sortearBicho } from "./bichos";
 import { criarVoz } from "./voz";
 
-// "Encontre os animais": os bichos andam num pasto cercado, a palavra de um
-// deles aparece no meio e a voz pede para pegar esse bicho.
+// "Encontre os animais": os bichos passeiam pelo pasto, a palavra de um deles
+// aparece no meio e a voz pede para pegar esse bicho. Quem é pego vai para o
+// cercadinho do celeiro, e o número em cima do celeiro conta quantos já estão lá.
 export default function Animais() {
   const pastoRef = useRef(null);
 
@@ -11,23 +12,47 @@ export default function Animais() {
 
   return (
     <div className="pasto" ref={pastoRef}>
-      {/* Cerca com uma porteira no meio de cada lado */}
-      <div className="cerca h cima a" />
-      <div className="cerca h cima b" />
-      <div className="cerca h baixo a" />
-      <div className="cerca h baixo b" />
-      <div className="cerca v esquerda a" />
-      <div className="cerca v esquerda b" />
-      <div className="cerca v direita a" />
-      <div className="cerca v direita b" />
       <div className="palavra-alvo" />
+      <div className="fazenda">
+        <div className="cercadinho">
+          <div className="cerca h cima" />
+          <div className="cerca h baixo" />
+          <div className="cerca v esquerda" />
+        </div>
+        <div className="celeiro">
+          <div className="contador">0</div>
+          <Celeiro />
+        </div>
+      </div>
     </div>
   );
 }
 
-const QUANTOS = 5; // sempre pelo menos 5 bichos andando
-const CERCA = 26; // grossura da cerca, em pixels (igual ao CSS)
-const PORTAS = ["cima", "baixo", "esquerda", "direita"];
+// Celeiro vermelho, com telhado escuro, acabamento branco e portas com X
+function Celeiro() {
+  return (
+    <svg viewBox="0 0 120 110" aria-label="Celeiro">
+      <path d="M12 108 L12 48 L28 22 L60 8 L92 22 L108 48 L108 108 Z" fill="#c62828" />
+      {/* tábuas */}
+      <path d="M24 108 V42 M36 108 V28 M84 108 V28 M96 108 V42" stroke="#a51f1f" strokeWidth="2" />
+      <path d="M12 108 L12 48 L28 22 L60 8 L92 22 L108 48 L108 108" stroke="white" strokeWidth="3" fill="none" />
+      {/* telhado */}
+      <path d="M5 51 L26 18 L60 2 L94 18 L115 51" stroke="#4e1212" strokeWidth="7" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+      {/* janela do feno */}
+      <rect x="49" y="26" width="22" height="18" fill="#4e1a1a" stroke="white" strokeWidth="3" />
+      <path d="M49 26 L71 44 M71 26 L49 44" stroke="white" strokeWidth="2" />
+      {/* portas */}
+      <rect x="38" y="60" width="44" height="48" fill="#a51f1f" stroke="white" strokeWidth="3" />
+      <path d="M60 60 V108 M38 60 L60 108 M60 60 L38 108 M60 60 L82 108 M82 60 L60 108" stroke="white" strokeWidth="2.5" />
+    </svg>
+  );
+}
+
+const QUANTOS = 5; // sempre pelo menos 5 bichos andando no pasto
+const CABEM_NO_CERCADO = 8; // passando disso, os mais antigos entram no celeiro
+const CERCA = 12; // grossura da cerca do cercadinho (igual ao CSS)
+const PEQUENO = 0.55; // tamanho do bicho dentro do cercadinho
+const LADOS = ["cima", "esquerda", "direita"]; // por onde os bichos chegam
 
 function iniciarCaca(pasto) {
   const timers = new Set();
@@ -43,13 +68,34 @@ function iniciarCaca(pasto) {
 
   const voz = criarVoz(depois);
   const cartao = pasto.querySelector(".palavra-alvo");
+  const fazenda = pasto.querySelector(".fazenda");
+  const cercadinho = pasto.querySelector(".cercadinho");
+  const celeiro = pasto.querySelector(".celeiro");
+  const contador = pasto.querySelector(".contador");
   let animais = [];
   let alvo = null; // o bicho que ela precisa pegar agora
   let comemorando = false;
   let tempoDica = 0;
+  let pegos = 0;
 
-  function tamanhoDaTela() {
-    return { W: pasto.clientWidth, H: pasto.clientHeight };
+  // Medidas da tela: o pasto vai até onde começa a fazenda
+  function medidas() {
+    const W = pasto.clientWidth;
+    const H = pasto.clientHeight;
+    const c = cercadinho.getBoundingClientRect();
+    const cel = celeiro.getBoundingClientRect();
+    return {
+      W,
+      fundoDoPasto: fazenda.getBoundingClientRect().top,
+      cercado: {
+        esquerda: c.left + CERCA,
+        direita: c.right, // do lado do celeiro não tem cerca
+        cima: c.top + CERCA,
+        baixo: c.bottom - CERCA,
+      },
+      porta: { x: cel.left + cel.width / 2, y: cel.bottom - cel.height * 0.2 },
+      H,
+    };
   }
 
   // Estrelinhas saindo de um ponto da tela
@@ -74,37 +120,16 @@ function iniciarCaca(pasto) {
 
   // Bichos grandes (elefante, girafa) ficam maiores que os pequenos (formiga)
   function tamanhoDoBicho(tipo) {
-    const { W, H } = tamanhoDaTela();
+    const { W, H } = medidas();
     const base = Math.min(W, H) / 9;
     return Math.max(44, base * (0.8 + (tipo.tamanho - 3) * 0.08));
   }
 
-  // Onde o bicho fica logo do lado de fora da porteira, e para onde é "para dentro"
-  function foraDaPorta(porta, a) {
-    const { W, H } = tamanhoDaTela();
-    if (porta === "cima") return { x: W / 2 - a.w / 2, y: -a.h, dx: 0, dy: 1 };
-    if (porta === "baixo") return { x: W / 2 - a.w / 2, y: H, dx: 0, dy: -1 };
-    if (porta === "esquerda") return { x: -a.w, y: H / 2 - a.h / 2, dx: 1, dy: 0 };
-    return { x: W, y: H / 2 - a.h / 2, dx: -1, dy: 0 };
-  }
-
-  // A porteira mais perto do bicho (para ele ir embora por ela)
-  function portaMaisPerto(a) {
-    const { W, H } = tamanhoDaTela();
-    const cx = a.x + a.w / 2;
-    const cy = a.y + a.h / 2;
-    return [
-      { porta: "cima", x: W / 2 - a.w / 2, y: CERCA, d: cy },
-      { porta: "baixo", x: W / 2 - a.w / 2, y: H - CERCA - a.h, d: H - cy },
-      { porta: "esquerda", x: CERCA, y: H / 2 - a.h / 2, d: cx },
-      { porta: "direita", x: W - CERCA - a.w, y: H / 2 - a.h / 2, d: W - cx },
-    ].sort((p, q) => p.d - q.d)[0];
-  }
-
   function novaDirecao(a) {
     const angulo = Math.random() * Math.PI * 2;
-    a.vx = Math.cos(angulo) * a.velocidade;
-    a.vy = Math.sin(angulo) * a.velocidade;
+    const velocidade = a.estado === "no-cercado" ? a.velocidade * 0.4 : a.velocidade;
+    a.vx = Math.cos(angulo) * velocidade;
+    a.vy = Math.sin(angulo) * velocidade;
     a.tempoParaVirar = 2 + Math.random() * 3;
   }
 
@@ -114,9 +139,19 @@ function iniciarCaca(pasto) {
     a.el.style.transform = `translate(${a.x}px, ${a.y}px)`;
   }
 
-  // Um bicho novo entra por uma das 4 porteiras
-  function entrarAnimal(porta = PORTAS[Math.floor(Math.random() * PORTAS.length)]) {
-    const tipo = sortearBicho(animais.map((a) => a.tipo.emoji));
+  // Bate nas bordas de uma área e volta
+  function baterNasBordas(a, esquerda, cima, direita, baixo) {
+    const maxX = Math.max(esquerda, direita - a.w);
+    const maxY = Math.max(cima, baixo - a.h);
+    if (a.x < esquerda) { a.x = esquerda; a.vx = Math.abs(a.vx); }
+    if (a.x > maxX) { a.x = maxX; a.vx = -Math.abs(a.vx); }
+    if (a.y < cima) { a.y = cima; a.vy = Math.abs(a.vy); }
+    if (a.y > maxY) { a.y = maxY; a.vy = -Math.abs(a.vy); }
+  }
+
+  // Um bicho novo chega por cima ou pelos lados da tela
+  function entrarAnimal(lado = LADOS[Math.floor(Math.random() * LADOS.length)]) {
+    const tipo = sortearBicho(animais.filter((a) => a.estado !== "no-cercado").map((a) => a.tipo.emoji));
     const el = document.createElement("div");
     el.className = "animal";
     el.dataset.palavra = tipo.palavra;
@@ -125,6 +160,7 @@ function iniciarCaca(pasto) {
     pasto.appendChild(el);
 
     const caixa = el.getBoundingClientRect();
+    const { W, fundoDoPasto } = medidas();
     const a = {
       el, tipo,
       w: caixa.width,
@@ -133,11 +169,18 @@ function iniciarCaca(pasto) {
       velocidade: 60 + Math.random() * 40,
       tempoParaVirar: 0,
     };
-    const p = foraDaPorta(porta, a);
-    a.x = p.x;
-    a.y = p.y;
-    a.vx = p.dx * 130;
-    a.vy = p.dy * 130;
+    const entrada = 130;
+    if (lado === "cima") {
+      a.x = Math.random() * (W - a.w);
+      a.y = -a.h;
+      a.vx = 0;
+      a.vy = entrada;
+    } else {
+      a.x = lado === "esquerda" ? -a.w : W;
+      a.y = Math.random() * Math.max(0, fundoDoPasto - a.h);
+      a.vx = lado === "esquerda" ? entrada : -entrada;
+      a.vy = 0;
+    }
     el.addEventListener("pointerdown", (evento) => tocar(a, evento));
     animais.push(a);
     posicionar(a);
@@ -145,7 +188,7 @@ function iniciarCaca(pasto) {
 
   // Escolhe um dos bichos que estão no pasto e mostra a palavra dele
   function novoAlvo(primeiro) {
-    const candidatos = animais.filter((a) => a.estado !== "saindo");
+    const candidatos = animais.filter((a) => a.estado === "andando" || a.estado === "entrando");
     if (!candidatos.length) return;
     alvo = candidatos[Math.floor(Math.random() * candidatos.length)];
     tempoDica = 0;
@@ -156,21 +199,58 @@ function iniciarCaca(pasto) {
     voz.falar(primeiro ? `Vamos brincar! Pega ${alvo.tipo.nome}!` : `Agora pega ${alvo.tipo.nome}!`);
   }
 
+  // O bicho pego vai pequenininho para um lugar no cercadinho
+  function mandarProCercado(a) {
+    const { cercado } = medidas();
+    a.estado = "indo-pro-cercado";
+    a.w = (a.w - 28) * PEQUENO + 28;
+    a.h = (a.h - 28) * PEQUENO + 28;
+    a.el.style.fontSize = parseFloat(a.el.style.fontSize) * PEQUENO + "px";
+    a.destino = {
+      x: cercado.esquerda + Math.random() * Math.max(0, cercado.direita - cercado.esquerda - a.w),
+      y: cercado.cima + Math.random() * Math.max(0, cercado.baixo - cercado.cima - a.h),
+    };
+  }
+
+  // Bicho chegou no cercadinho: conta mais um em cima do celeiro
+  function chegouNoCercado(a) {
+    a.estado = "no-cercado";
+    a.el.classList.remove("feliz");
+    a.el.classList.add("pequeno");
+    novaDirecao(a);
+    pegos++;
+    contador.textContent = pegos;
+    contador.classList.remove("pulou");
+    void contador.offsetWidth;
+    contador.classList.add("pulou");
+
+    // Cercadinho cheio: o bicho mais antigo entra no celeiro
+    const noCercado = animais.filter((b) => b.estado === "no-cercado");
+    if (noCercado.length > CABEM_NO_CERCADO) noCercado[0].estado = "entrando-no-celeiro";
+  }
+
   function tocar(a, evento) {
     evento.preventDefault();
     evento.stopPropagation();
-    if (comemorando || !alvo || a.estado === "saindo") return;
+    if (comemorando || !alvo) return;
+
+    // Bicho do cercadinho só faz o som dele
+    if (a.estado === "no-cercado") {
+      voz.somEFala(a.tipo, `Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
+      return;
+    }
+    if (a.estado !== "andando" && a.estado !== "entrando") return;
 
     if (a !== alvo) {
       // Bicho errado: ele balança e a voz diz quem é
       a.el.classList.remove("errou");
       void a.el.offsetWidth;
       a.el.classList.add("errou");
-      voz.falar(`Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
+      voz.somEFala(a.tipo, `Esse é ${a.tipo.nome}! Pega ${alvo.tipo.nome}!`);
       return;
     }
 
-    // Acertou! Festa, o bicho sai feliz pela porteira e entra outro
+    // Acertou! Festa, o bicho vai para o celeiro e entra outro no pasto
     comemorando = true;
     alvo = null;
     const caixa = a.el.getBoundingClientRect();
@@ -178,18 +258,35 @@ function iniciarCaca(pasto) {
     a.el.classList.remove("dica", "errou");
     a.el.classList.add("feliz");
     cartao.classList.add("acertou");
-
-    const p = portaMaisPerto(a);
-    a.estado = "saindo";
-    a.fase = "indo-para-porta";
-    a.saida = p.porta;
-    a.destino = { x: p.x, y: p.y };
-
+    mandarProCercado(a);
     entrarAnimal();
-    voz.falar(`Aee! Você pegou ${a.tipo.nome}!`, () => {
-      comemorando = false;
-      novoAlvo(false);
-    });
+
+    const total = pegos + 1;
+    voz.somEFala(
+      a.tipo,
+      `Aee! Você pegou ${a.tipo.nome}! Agora tem ${total} ${total === 1 ? "bicho" : "bichos"} no celeiro!`,
+      () => {
+        comemorando = false;
+        novoAlvo(false);
+      }
+    );
+  }
+
+  // Anda em linha reta até um ponto; devolve true quando chega
+  function irAte(a, x, y, velocidade, s) {
+    const dx = x - a.x;
+    const dy = y - a.y;
+    const d = Math.hypot(dx, dy);
+    if (d <= velocidade * s) {
+      a.x = x;
+      a.y = y;
+      return true;
+    }
+    a.vx = (dx / d) * velocidade;
+    a.vy = (dy / d) * velocidade;
+    a.x += a.vx * s;
+    a.y += a.vy * s;
+    return false;
   }
 
   let ultimo = performance.now();
@@ -197,18 +294,15 @@ function iniciarCaca(pasto) {
   function mover(agora) {
     const s = Math.min((agora - ultimo) / 1000, 0.05);
     ultimo = agora;
-    const { W, H } = tamanhoDaTela();
+    const { W, fundoDoPasto, cercado, porta } = medidas();
 
     for (const a of [...animais]) {
       if (a.estado === "entrando") {
         a.x += a.vx * s;
         a.y += a.vy * s;
-        // Anda um pouco para dentro da cerca antes de começar a passear
-        const dentro = 40;
-        if (
-          a.x >= CERCA + dentro && a.y >= CERCA + dentro &&
-          a.x + a.w <= W - CERCA - dentro && a.y + a.h <= H - CERCA - dentro
-        ) {
+        // Anda um pouco para dentro da tela antes de começar a passear
+        const dentro = 30;
+        if (a.x >= dentro && a.y >= dentro && a.x + a.w <= W - dentro && a.y + a.h <= fundoDoPasto - dentro) {
           a.estado = "andando";
           novaDirecao(a);
         }
@@ -217,41 +311,23 @@ function iniciarCaca(pasto) {
         if (a.tempoParaVirar <= 0) novaDirecao(a);
         a.x += a.vx * s;
         a.y += a.vy * s;
-        // Bate na cerca e volta
-        const maxX = W - CERCA - a.w;
-        const maxY = H - CERCA - a.h;
-        if (a.x < CERCA) { a.x = CERCA; a.vx = Math.abs(a.vx); }
-        if (a.x > maxX) { a.x = maxX; a.vx = -Math.abs(a.vx); }
-        if (a.y < CERCA) { a.y = CERCA; a.vy = Math.abs(a.vy); }
-        if (a.y > maxY) { a.y = maxY; a.vy = -Math.abs(a.vy); }
-      } else if (a.estado === "saindo") {
-        const rapido = 260;
-        if (a.fase === "indo-para-porta") {
-          const dx = a.destino.x - a.x;
-          const dy = a.destino.y - a.y;
-          const d = Math.hypot(dx, dy);
-          if (d <= rapido * s) {
-            // Chegou na porteira: sai reto para fora
-            a.x = a.destino.x;
-            a.y = a.destino.y;
-            a.fase = "saindo-pela-porta";
-            const p = foraDaPorta(a.saida, a);
-            a.vx = -p.dx * rapido;
-            a.vy = -p.dy * rapido;
-          } else {
-            a.vx = (dx / d) * rapido;
-            a.vy = (dy / d) * rapido;
-            a.x += a.vx * s;
-            a.y += a.vy * s;
-          }
-        } else {
-          a.x += a.vx * s;
-          a.y += a.vy * s;
-          if (a.x < -a.w - 20 || a.x > W + 20 || a.y < -a.h - 20 || a.y > H + 20) {
+        baterNasBordas(a, 0, 0, W, fundoDoPasto);
+      } else if (a.estado === "indo-pro-cercado") {
+        if (irAte(a, a.destino.x, a.destino.y, 300, s)) chegouNoCercado(a);
+      } else if (a.estado === "no-cercado") {
+        a.tempoParaVirar -= s;
+        if (a.tempoParaVirar <= 0) novaDirecao(a);
+        a.x += a.vx * s;
+        a.y += a.vy * s;
+        baterNasBordas(a, cercado.esquerda, cercado.cima, cercado.direita, cercado.baixo);
+      } else if (a.estado === "entrando-no-celeiro") {
+        if (irAte(a, porta.x - a.w / 2, porta.y - a.h / 2, 120, s)) {
+          a.estado = "sumindo";
+          a.el.classList.add("sumindo");
+          depois(() => {
             a.el.remove();
             animais = animais.filter((b) => b !== a);
-            continue;
-          }
+          }, 500);
         }
       }
       posicionar(a);
@@ -270,11 +346,9 @@ function iniciarCaca(pasto) {
     quadro = requestAnimationFrame(mover);
   }
 
-  // Começo: os 5 primeiros bichos entram um de cada vez, por porteiras diferentes
-  const portasDoComeco = [...PORTAS].sort(() => Math.random() - 0.5);
-  portasDoComeco.push(PORTAS[Math.floor(Math.random() * PORTAS.length)]);
+  // Começo: os 5 primeiros bichos chegam um de cada vez
   for (let i = 0; i < QUANTOS; i++) {
-    depois(() => entrarAnimal(portasDoComeco[i]), i * 700);
+    depois(() => entrarAnimal(LADOS[i % LADOS.length]), i * 700);
   }
   depois(() => novoAlvo(true), QUANTOS * 700 + 1200);
   quadro = requestAnimationFrame(mover);
@@ -289,5 +363,6 @@ function iniciarCaca(pasto) {
     document.querySelectorAll(".festa").forEach((el) => el.remove());
     cartao.textContent = "";
     cartao.className = "palavra-alvo";
+    contador.textContent = "0";
   };
 }

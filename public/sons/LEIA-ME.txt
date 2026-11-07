@@ -1,0 +1,10 @@
+Sons de verdade dos bichos
+
+Coloque aqui uma gravação .mp3 para cada bicho, com o nome da palavra em
+minúsculas. Exemplos: vaca.mp3, porco.mp3, cachorro.mp3, dinossauro.mp3
+
+Nomes: formiga, caracol, tartaruga, gato, cachorro, elefante, dinossauro,
+porco, cabrito, cavalo, camelo, pato, galinha, vaca, ovelha, girafa, zebra, coelho
+
+Se o arquivo não existir, a voz fala o som do bicho (ex.: "Muuu!").
+Gravações com mais de 3 segundos são cortadas.

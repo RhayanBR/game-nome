@@ -313,47 +313,103 @@ li .foto svg {
   background:
     radial-gradient(circle, #8bc34a 2px, transparent 3px) 0 0 / 46px 46px,
     #a5d46a;
-  --porteira-h: min(170px, 30vw); /* abertura nas cercas de cima e de baixo */
-  --porteira-v: min(170px, 30vh); /* abertura nas cercas dos lados */
+  --fazenda: min(190px, 26vh, 42vw); /* altura do celeiro */
 }
 
+/* Celeiro com o cercadinho, embaixo no meio da tela */
+.fazenda {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  height: var(--fazenda);
+  display: flex;
+  align-items: flex-end;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.cercadinho {
+  position: relative;
+  width: min(380px, calc(100vw - var(--fazenda) * 1.09 - 16px));
+  height: 72%;
+  background: #d9b97c; /* chão de terra */
+  border-radius: 4px 0 0 4px;
+}
+
+.celeiro {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 120 / 110;
+  margin-left: -6px;
+}
+
+.celeiro svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Número de bichos no celeiro */
+.contador {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  font-size: min(2.6rem, 9vw);
+  font-weight: bold;
+  line-height: 1.3;
+  text-align: center;
+  color: #c62828;
+  background: white;
+  border: 5px solid #c62828;
+  border-radius: 999px;
+}
+
+.contador.pulou {
+  animation: contar 0.6s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes contar {
+  from {
+    transform: translateX(-50%) scale(0.3);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.5);
+  }
+}
+
+/* Cerca de madeira do cercadinho */
 .cerca {
   position: absolute;
-  z-index: 5;
   pointer-events: none;
   --madeira: #c68a4e;
   --trave: #8d5a2b;
-  --mourao: #6d4320;
 }
 
-/* Cerca de cima e de baixo: estacas em pé com duas traves deitadas */
 .cerca.h {
-  height: 26px;
-  width: calc(50% - var(--porteira-h) / 2);
+  left: 0;
+  width: 100%;
+  height: 12px;
   background:
-    linear-gradient(var(--trave), var(--trave)) 0 25% / 100% 5px no-repeat,
-    linear-gradient(var(--trave), var(--trave)) 0 75% / 100% 5px no-repeat,
-    repeating-linear-gradient(90deg, var(--madeira) 0 9px, transparent 9px 17px);
+    linear-gradient(var(--trave), var(--trave)) 0 50% / 100% 4px no-repeat,
+    repeating-linear-gradient(90deg, var(--madeira) 0 6px, transparent 6px 11px);
 }
 
-/* Cerca dos lados: estacas deitadas com duas traves em pé */
 .cerca.v {
-  width: 26px;
-  height: calc(50% - var(--porteira-v) / 2);
+  top: 0;
+  width: 12px;
+  height: 100%;
   background:
-    linear-gradient(var(--trave), var(--trave)) 25% 0 / 5px 100% no-repeat,
-    linear-gradient(var(--trave), var(--trave)) 75% 0 / 5px 100% no-repeat,
-    repeating-linear-gradient(0deg, var(--madeira) 0 9px, transparent 9px 17px);
+    linear-gradient(var(--trave), var(--trave)) 50% 0 / 4px 100% no-repeat,
+    repeating-linear-gradient(0deg, var(--madeira) 0 6px, transparent 6px 11px);
 }
 
 .cerca.cima { top: 0; }
 .cerca.baixo { bottom: 0; }
-.cerca.h.a { left: 0; border-right: 12px solid var(--mourao); }
-.cerca.h.b { right: 0; border-left: 12px solid var(--mourao); }
 .cerca.esquerda { left: 0; }
-.cerca.direita { right: 0; }
-.cerca.v.a { top: 0; border-bottom: 12px solid var(--mourao); }
-.cerca.v.b { bottom: 0; border-top: 12px solid var(--mourao); }
 
 /* Os bichos do pasto */
 .animal {
@@ -383,6 +439,12 @@ li .foto svg {
 
 .animal.feliz .passo {
   animation: pulinho 0.25s ease-in-out infinite alternate;
+}
+
+/* Entrando pela porta do celeiro */
+.animal.sumindo {
+  opacity: 0;
+  transition: opacity 0.5s;
 }
 
 /* Bicho errado balança, como quem diz "não sou eu!" */
@@ -415,7 +477,7 @@ li .foto svg {
 .palavra-alvo {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: calc(50% - var(--fazenda) / 2);
   transform: translate(-50%, -50%);
   z-index: 15;
   pointer-events: none;
