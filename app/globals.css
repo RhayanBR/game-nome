@@ -298,3 +298,170 @@ li .foto svg {
   width: 1em;
   height: 1em;
 }
+
+.escolha {
+  max-width: 18rem;
+  text-align: center;
+}
+
+/* ---------- Encontre os animais ---------- */
+.pasto {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background:
+    radial-gradient(circle, #8bc34a 2px, transparent 3px) 0 0 / 46px 46px,
+    #a5d46a;
+  --porteira-h: min(170px, 30vw); /* abertura nas cercas de cima e de baixo */
+  --porteira-v: min(170px, 30vh); /* abertura nas cercas dos lados */
+}
+
+.cerca {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  --madeira: #c68a4e;
+  --trave: #8d5a2b;
+  --mourao: #6d4320;
+}
+
+/* Cerca de cima e de baixo: estacas em pé com duas traves deitadas */
+.cerca.h {
+  height: 26px;
+  width: calc(50% - var(--porteira-h) / 2);
+  background:
+    linear-gradient(var(--trave), var(--trave)) 0 25% / 100% 5px no-repeat,
+    linear-gradient(var(--trave), var(--trave)) 0 75% / 100% 5px no-repeat,
+    repeating-linear-gradient(90deg, var(--madeira) 0 9px, transparent 9px 17px);
+}
+
+/* Cerca dos lados: estacas deitadas com duas traves em pé */
+.cerca.v {
+  width: 26px;
+  height: calc(50% - var(--porteira-v) / 2);
+  background:
+    linear-gradient(var(--trave), var(--trave)) 25% 0 / 5px 100% no-repeat,
+    linear-gradient(var(--trave), var(--trave)) 75% 0 / 5px 100% no-repeat,
+    repeating-linear-gradient(0deg, var(--madeira) 0 9px, transparent 9px 17px);
+}
+
+.cerca.cima { top: 0; }
+.cerca.baixo { bottom: 0; }
+.cerca.h.a { left: 0; border-right: 12px solid var(--mourao); }
+.cerca.h.b { right: 0; border-left: 12px solid var(--mourao); }
+.cerca.esquerda { left: 0; }
+.cerca.direita { right: 0; }
+.cerca.v.a { top: 0; border-bottom: 12px solid var(--mourao); }
+.cerca.v.b { bottom: 0; border-top: 12px solid var(--mourao); }
+
+/* Os bichos do pasto */
+.animal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  line-height: 1;
+  padding: 14px; /* área maior para o dedinho acertar */
+  cursor: pointer;
+  touch-action: none;
+}
+
+.animal .corpo,
+.animal .sacode,
+.animal .passo {
+  display: inline-block;
+}
+
+.animal.direita .corpo {
+  transform: scaleX(-1);
+}
+
+.animal .passo {
+  animation: andar 0.3s ease-in-out infinite alternate;
+}
+
+.animal.feliz .passo {
+  animation: pulinho 0.25s ease-in-out infinite alternate;
+}
+
+/* Bicho errado balança, como quem diz "não sou eu!" */
+.animal.errou .sacode {
+  animation: sacudir 0.5s ease-in-out;
+}
+
+@keyframes sacudir {
+  25% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+}
+
+/* Dica: o bicho certo brilha quando ela demora */
+.animal.dica .sacode {
+  animation: brilhar 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes brilhar {
+  from {
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px gold);
+  }
+  to {
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 18px gold);
+  }
+}
+
+/* A palavra no meio do pasto (o toque passa por ela até os bichos) */
+.palavra-alvo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  pointer-events: none;
+  font-size: min(4.5rem, 11vw);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  color: #2e7d32;
+  background: rgba(255, 255, 255, 0.6);
+  border: 5px solid #2e7d32;
+  border-radius: 1.5rem;
+  padding: 0.15em 0.6em;
+  white-space: nowrap;
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.palavra-alvo:empty {
+  display: none;
+}
+
+.palavra-alvo.aparecer {
+  animation: aparecer 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes aparecer {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+.palavra-alvo.acertou {
+  color: #f9a825;
+  border-color: #f9a825;
+}
+
+/* Celular deitado ou tela baixa: os 3 botões do menu cabem na tela */
+@media (max-height: 820px) {
+  .menu {
+    gap: 1rem;
+  }
+
+  .escolha {
+    padding: 0.8rem 1.5rem;
+    font-size: 2rem;
+  }
+
+  .escolha .figura {
+    font-size: 3.5rem;
+  }
+}

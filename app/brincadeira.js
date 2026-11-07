@@ -1,4 +1,5 @@
 import { sortearBicho } from "./bichos";
+import { vozBrasileira } from "./voz";
 
 // Toda a brincadeira roda direto no DOM (animações quadro a quadro e voz).
 // Devolve uma função de limpeza que para tudo e deixa a tela como no começo.
@@ -36,33 +37,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     V: "ve", W: "dablio", X: "xis", Y: "ipsilon", Z: "ze",
   };
 
-  // Escolhe a voz em português do Brasil que soa mais natural.
-  // A preferida é a do Chrome ("Google português do Brasil").
-  let vozEscolhida = null;
-
-  function pontosDaVoz(v) {
-    const nome = v.name.toLowerCase();
-    let pontos = 0;
-    if (nome.includes("google")) pontos += 10;
-    if (/natural|online|neural/.test(nome)) pontos += 4;
-    if (/francisca|thalita|luciana|fernanda|vitoria|vitória/.test(nome)) pontos += 2;
-    if (!v.localService) pontos += 1;
-    return pontos;
-  }
-
-  function escolherVoz() {
-    const vozes = speechSynthesis.getVoices();
-    const lingua = (v) => v.lang.replace("_", "-").toLowerCase();
-    const brasileiras = vozes.filter((v) => lingua(v) === "pt-br");
-    const candidatas = brasileiras.length
-      ? brasileiras
-      : vozes.filter((v) => lingua(v).startsWith("pt"));
-    vozEscolhida = candidatas.sort((a, b) => pontosDaVoz(b) - pontosDaVoz(a))[0] || null;
-  }
-
-  // Em muitos navegadores a lista de vozes só chega depois de um tempo
-  escolherVoz();
-  speechSynthesis.addEventListener("voiceschanged", escolherVoz);
 
   // Enquanto a voz está falando, os cliques nas letras ficam bloqueados
   let falando = false;
@@ -84,7 +58,8 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
 
     const fala = new SpeechSynthesisUtterance(texto);
     fala.lang = "pt-BR";
-    if (vozEscolhida) fala.voice = vozEscolhida;
+    const voz = vozBrasileira();
+    if (voz) fala.voice = voz;
     fala.rate = 0.85; // um pouco mais devagar, para a criança acompanhar
     fala.pitch = 1.2; // tom um pouco mais alto, mais alegre
     fala.onend = terminar;
@@ -500,7 +475,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   return () => {
     falaAtual++; // invalida qualquer fala em andamento
     speechSynthesis.cancel();
-    speechSynthesis.removeEventListener("voiceschanged", escolherVoz);
     modoFesta = false;
     clearInterval(intervaloDosFogos);
     timers.forEach(clearTimeout);
