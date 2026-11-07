@@ -512,6 +512,29 @@ li .foto svg {
   border-color: #f9a825;
 }
 
+/* Botão que aparece no fim, depois de pegar todos os bichos */
+.jogar-de-novo {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - var(--fazenda) / 2 + min(4.5rem, 11vw) + 1.5rem);
+  translate: -50% 0;
+  z-index: 20;
+  min-width: 0;
+  padding: 1rem 1.5rem;
+  font-size: min(2rem, 7vw);
+  animation: aparecer-botao 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+.jogar-de-novo .figura {
+  font-size: min(3.5rem, 12vw);
+}
+
+@keyframes aparecer-botao {
+  from {
+    scale: 0;
+  }
+}
+
 /* Celular deitado ou tela baixa: os 3 botões do menu cabem na tela */
 @media (max-height: 820px) {
   .menu {

@@ -1,18 +1,33 @@
-import { useEffect, useRef } from "react";
-import { sortearBicho } from "./bichos";
+import { useEffect, useRef, useState } from "react";
+import { sortearBicho, TOTAL_DE_BICHOS } from "./bichos";
 import { criarVoz } from "./voz";
 
 // "Encontre os animais": os bichos passeiam pelo pasto, a palavra de um deles
 // aparece no meio e a voz pede para pegar esse bicho. Quem é pego vai para o
 // cercadinho do celeiro, e o número em cima do celeiro conta quantos já estão lá.
+// Bicho que já foi pego não volta mais: quando todos estiverem presos, acabou.
 export default function Animais() {
   const pastoRef = useRef(null);
+  const [rodada, setRodada] = useState(0);
+  const [acabou, setAcabou] = useState(false);
 
-  useEffect(() => iniciarCaca(pastoRef.current), []);
+  // Cada rodada começa uma brincadeira nova, do zero
+  useEffect(() => iniciarCaca(pastoRef.current, () => setAcabou(true)), [rodada]);
+
+  function jogarDeNovo() {
+    setAcabou(false);
+    setRodada((r) => r + 1);
+  }
 
   return (
     <div className="pasto" ref={pastoRef}>
       <div className="palavra-alvo" />
+      {acabou && (
+        <button className="escolha jogar-de-novo" style={{ "--cor": "#43a047" }} onClick={jogarDeNovo}>
+          <span className="figura">🔄</span>
+          Jogar de novo
+        </button>
+      )}
       <div className="fazenda">
         <div className="cercadinho">
           <div className="cerca h cima" />
@@ -54,7 +69,7 @@ const CERCA = 12; // grossura da cerca do cercadinho (igual ao CSS)
 const PEQUENO = 0.55; // tamanho do bicho dentro do cercadinho
 const LADOS = ["cima", "esquerda", "direita"]; // por onde os bichos chegam
 
-function iniciarCaca(pasto) {
+function iniciarCaca(pasto, aoAcabar) {
   const timers = new Set();
   let quadro = null;
 
@@ -77,6 +92,7 @@ function iniciarCaca(pasto) {
   let comemorando = false;
   let tempoDica = 0;
   let pegos = 0;
+  const jaVieram = new Set(); // emojis dos bichos que já entraram no pasto
 
   // Medidas da tela: o pasto vai até onde começa a fazenda
   function medidas() {
@@ -151,7 +167,10 @@ function iniciarCaca(pasto) {
 
   // Um bicho novo chega por cima ou pelos lados da tela
   function entrarAnimal(lado = LADOS[Math.floor(Math.random() * LADOS.length)]) {
-    const tipo = sortearBicho(animais.filter((a) => a.estado !== "no-cercado").map((a) => a.tipo.emoji));
+    // Cada bicho entra uma vez só; quando todos já vieram, não entra mais ninguém
+    if (jaVieram.size >= TOTAL_DE_BICHOS) return;
+    const tipo = sortearBicho([...jaVieram]);
+    jaVieram.add(tipo.emoji);
     const el = document.createElement("div");
     el.className = "animal";
     el.dataset.palavra = tipo.palavra;
@@ -262,6 +281,10 @@ function iniciarCaca(pasto) {
     entrarAnimal();
 
     const total = pegos + 1;
+    if (total >= TOTAL_DE_BICHOS) {
+      fimDeJogo(a);
+      return;
+    }
     voz.somEFala(
       a.tipo,
       `Aee! Você pegou ${a.tipo.nome}! Agora tem ${total} ${total === 1 ? "bicho" : "bichos"} no celeiro!`,
@@ -270,6 +293,22 @@ function iniciarCaca(pasto) {
         novoAlvo(false);
       }
     );
+  }
+
+  // Pegou o último bicho: festa grande e a brincadeira acaba
+  function fimDeJogo(a) {
+    const { W, H } = medidas();
+    depois(() => {
+      cartao.textContent = "PARABÉNS!";
+      cartao.classList.remove("aparecer", "acertou");
+      void cartao.offsetWidth;
+      cartao.classList.add("aparecer");
+      explosao(W / 2, H / 2, ["⭐", "✨", "🌟", "🎉", "🎊", "🏆"], 60, 400);
+    }, 1200);
+    voz.somEFala(a.tipo, `Aee! Você pegou ${a.tipo.nome}!`, () => {
+      voz.falar("Muito bem! Você pegou todos os animais!");
+      depois(aoAcabar, 1500);
+    });
   }
 
   // Anda em linha reta até um ponto; devolve true quando chega

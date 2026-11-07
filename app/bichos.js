@@ -21,6 +21,8 @@ const BICHOS = [
   { emoji: "🐇", palavra: "COELHO", nome: "o coelho", pronome: "ele", so: "coelho", no: "no coelho", tamanho: 5 },
 ];
 
+export const TOTAL_DE_BICHOS = BICHOS.length;
+
 // Quantas vezes cada bicho já ficou sem aparecer. Quanto mais tempo ele
 // espera, maior a chance de ser sorteado — assim todos acabam aparecendo.
 // Fica guardado no navegador para continuar valendo depois de recarregar.
