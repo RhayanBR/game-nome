@@ -1,14 +1,13 @@
 // Som de cada bicho quando ela toca nele.
-// Se existir uma gravação em public/sons/<palavra>.mp3 (ex.: public/sons/vaca.mp3),
-// toca a gravação. Senão, a voz fala o som do bicho (ex.: "Muuu!").
+// Só toca se existir uma gravação em public/sons/<palavra>.mp3 (ex.: public/sons/vaca.mp3).
+// Sem gravação, não toca nada e a voz segue normal.
 
 const temArquivo = {}; // lembra quais gravações existem, para não procurar de novo
 let atual = null;
 let vez = 0;
 const DURACAO_MAXIMA = 3000; // gravações compridas param em 3 segundos
 
-// Toca o som e depois chama depois(somFalado): somFalado é o texto que a voz
-// deve falar antes da frase ("Muuu! ") ou "" se a gravação já tocou.
+// Toca a gravação (se existir) e depois chama depois("").
 export function tocarSom(tipo, depois) {
   pararSom();
   speechSynthesis.cancel();
@@ -22,7 +21,7 @@ export function tocarSom(tipo, depois) {
 
   const arquivo = `/sons/${tipo.palavra.toLowerCase()}.mp3`;
   if (temArquivo[arquivo] === false) {
-    fim(`${tipo.som} `);
+    fim("");
     return;
   }
 
@@ -31,10 +30,10 @@ export function tocarSom(tipo, depois) {
   audio.onended = () => fim("");
   audio.onerror = () => {
     temArquivo[arquivo] = false;
-    fim(`${tipo.som} `);
+    fim("");
   };
   audio.onplaying = () => (temArquivo[arquivo] = true);
-  audio.play().catch(() => fim(`${tipo.som} `));
+  audio.play().catch(() => fim(""));
   setTimeout(() => {
     if (minha !== vez) return;
     audio.pause();
