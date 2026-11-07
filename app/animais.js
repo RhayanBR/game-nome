@@ -68,6 +68,7 @@ const CABEM_NO_CERCADO = 8; // passando disso, os mais antigos entram no celeiro
 const CERCA = 12; // grossura da cerca do cercadinho (igual ao CSS)
 const PEQUENO = 0.55; // tamanho do bicho dentro do cercadinho
 const LADOS = ["cima", "esquerda", "direita"]; // por onde os bichos chegam
+const DENTRO = 30; // quanto o bicho anda para dentro da tela antes de passear
 
 function iniciarCaca(pasto, aoAcabar) {
   const timers = new Set();
@@ -189,14 +190,17 @@ function iniciarCaca(pasto, aoAcabar) {
       tempoParaVirar: 0,
     };
     const entrada = 130;
+    // A posição de entrada fica longe das bordas, senão o bicho atravessa a tela
+    // reto, nunca começa a passear e some pelo outro lado
+    const sorteio = (min, max) => min + Math.random() * Math.max(0, max - min);
     if (lado === "cima") {
-      a.x = Math.random() * (W - a.w);
+      a.x = sorteio(DENTRO, W - DENTRO - a.w);
       a.y = -a.h;
       a.vx = 0;
       a.vy = entrada;
     } else {
       a.x = lado === "esquerda" ? -a.w : W;
-      a.y = Math.random() * Math.max(0, fundoDoPasto - a.h);
+      a.y = sorteio(DENTRO, fundoDoPasto - DENTRO - a.h);
       a.vx = lado === "esquerda" ? entrada : -entrada;
       a.vy = 0;
     }
@@ -340,10 +344,15 @@ function iniciarCaca(pasto, aoAcabar) {
         a.x += a.vx * s;
         a.y += a.vy * s;
         // Anda um pouco para dentro da tela antes de começar a passear
-        const dentro = 30;
-        if (a.x >= dentro && a.y >= dentro && a.x + a.w <= W - dentro && a.y + a.h <= fundoDoPasto - dentro) {
+        const dentro =
+          a.x >= DENTRO && a.y >= DENTRO && a.x + a.w <= W - DENTRO && a.y + a.h <= fundoDoPasto - DENTRO;
+        // Segurança (tela pequena ou girada): se passou do meio, já fica no pasto
+        const passou =
+          (a.vx > 0 && a.x > W / 2) || (a.vx < 0 && a.x + a.w < W / 2) || (a.vy > 0 && a.y > fundoDoPasto / 2);
+        if (dentro || passou) {
           a.estado = "andando";
           novaDirecao(a);
+          baterNasBordas(a, 0, 0, W, fundoDoPasto);
         }
       } else if (a.estado === "andando") {
         a.tempoParaVirar -= s;
