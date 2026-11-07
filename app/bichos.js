@@ -1,6 +1,6 @@
 // Todos os bichinhos que podem vir pegar as letras (nos dois jogos).
 // Os emojis olham para a esquerda; o jogo vira o bicho quando ele anda para a direita.
-const BICHOS = [
+export const BICHOS = [
   { emoji: "🐜", palavra: "FORMIGA", nome: "a formiga", pronome: "ela", so: "formiga", no: "na formiga", tamanho: 3 },
   { emoji: "🐌", palavra: "CARACOL", nome: "o caracol", pronome: "ele", so: "caracol", no: "no caracol", tamanho: 4 },
   { emoji: "🐢", palavra: "TARTARUGA", nome: "a tartaruga", pronome: "ela", so: "tartaruga", no: "na tartaruga", tamanho: 5 },

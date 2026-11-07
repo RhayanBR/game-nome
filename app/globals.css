@@ -535,7 +535,7 @@ li .foto svg {
   }
 }
 
-/* Celular deitado ou tela baixa: os 3 botões do menu cabem na tela */
+/* Celular deitado ou tela baixa: os botões do menu cabem na tela */
 @media (max-height: 820px) {
   .menu {
     gap: 1rem;
@@ -549,4 +549,386 @@ li .foto svg {
   .escolha .figura {
     font-size: 3.5rem;
   }
+}
+
+/* Celular em pé: os 4 botões do menu ficam 2 em cada linha */
+@media (max-width: 600px) {
+  .menu {
+    gap: 1rem;
+  }
+
+  .menu .escolha {
+    min-width: 0;
+    width: 42vw;
+    padding: 0.8rem 0.5rem;
+    font-size: 1.4rem;
+  }
+
+  .menu .escolha .figura {
+    font-size: 3rem;
+  }
+}
+
+/* ---------- Corrida dos animais ---------- */
+.corrida {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  touch-action: none;
+  background: linear-gradient(#81d4fa, #b3e5fc 14vh, #7cb342 14vh);
+}
+
+/* Texto em cima da pista ("Quem corre mais?") */
+.mensagem {
+  height: 14vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 70px;
+  font-size: min(3.2rem, 8vw, 8vh);
+  font-weight: bold;
+  color: #0d47a1;
+  white-space: nowrap;
+}
+
+.mensagem.aparecer {
+  animation: aparecer-mensagem 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+.mensagem.chamando {
+  animation: chamando 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes aparecer-mensagem {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes chamando {
+  to {
+    transform: scale(1.12);
+  }
+}
+
+.pista {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 1vh 0 2vh;
+  border-top: 5px solid white;
+  border-bottom: 5px solid white;
+}
+
+.raia {
+  flex: 1;
+  background: #d9a066;
+  border-bottom: 3px dashed rgba(255, 255, 255, 0.8);
+  transition: background 0.3s;
+}
+
+.raia:nth-child(even) {
+  background: #cf955a;
+}
+
+.raia:last-of-type {
+  border-bottom: none;
+}
+
+.pista.escolhendo .raia {
+  cursor: pointer;
+}
+
+.raia.escolhida,
+.raia.escolhida:nth-child(even) {
+  background: #ffe082;
+}
+
+/* Linha de largada (branca) e de chegada (xadrez) */
+.linha {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.largada {
+  width: 8px;
+  background: white;
+}
+
+.chegada {
+  width: 24px;
+  background: repeating-conic-gradient(#222 0 25%, white 0 50%) 0 0 / 12px 12px;
+}
+
+.corredor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1.15;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.corredor .corpo,
+.corredor .passo {
+  display: inline-block;
+}
+
+/* Os emojis olham para a esquerda; na corrida todos vão para a direita */
+.corredor .corpo {
+  transform: scaleX(-1);
+}
+
+.corredor.escolhido .corpo {
+  filter: drop-shadow(0 0 10px gold);
+}
+
+/* Parado na largada: respira de leve */
+.corredor .passo {
+  transform-origin: 50% 100%;
+  animation: respirar 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes respirar {
+  to {
+    transform: translateY(-5%) scale(1.03);
+  }
+}
+
+/* O jeito de correr de cada bicho */
+.corredor.correndo .passo {
+  animation-duration: var(--ritmo);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+}
+
+.corredor.correndo .jeito-galope { animation-name: galope; }
+.corredor.correndo .jeito-trote { animation-name: trote; }
+.corredor.correndo .jeito-pulo { animation-name: pulo-corrida; animation-timing-function: ease-out; }
+.corredor.correndo .jeito-bamboleio { animation-name: bamboleio; }
+.corredor.correndo .jeito-pesado { animation-name: pesado; }
+.corredor.correndo .jeito-arrasta { animation-name: arrasta; }
+.corredor.correndo .jeito-formiguinha { animation-name: formiguinha; }
+
+@keyframes galope {
+  from { transform: translateY(0) rotate(8deg); }
+  to { transform: translateY(-22%) rotate(-10deg); }
+}
+
+@keyframes trote {
+  from { transform: translateY(0) rotate(3deg); }
+  to { transform: translateY(-12%) rotate(-4deg); }
+}
+
+@keyframes pulo-corrida {
+  from { transform: translateY(0) scale(1.1, 0.9); }
+  to { transform: translateY(-50%) scale(0.95, 1.05); }
+}
+
+@keyframes bamboleio {
+  from { transform: rotate(-14deg); }
+  to { transform: translateY(-6%) rotate(14deg); }
+}
+
+@keyframes pesado {
+  from { transform: translateY(0) scaleY(0.94); }
+  to { transform: translateY(-7%) rotate(-3deg); }
+}
+
+@keyframes arrasta {
+  from { transform: scaleX(1); }
+  to { transform: scale(1.15, 0.92); }
+}
+
+@keyframes formiguinha {
+  from { transform: translateY(0); }
+  to { transform: translateY(-10%); }
+}
+
+/* Velocidade de cada um: aparece quando a corrida começa */
+.corredor .placa {
+  position: absolute;
+  bottom: 92%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: max(0.24em, 12px);
+  font-weight: bold;
+  color: #333;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 1em;
+  padding: 0 0.4em;
+  white-space: nowrap;
+  display: none;
+}
+
+.pista.correndo .corredor .placa {
+  display: block;
+}
+
+/* Medalha de quem passou da chegada: do lado, atrás do bicho */
+.corredor .medalha {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  translate: 0 -50%;
+  font-size: 0.5em;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 4px #333;
+  animation: aparecer-mensagem 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+.corredor .medalha:empty {
+  display: none;
+}
+
+.poeira {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  animation: poeira 0.7s ease-out forwards;
+}
+
+@keyframes poeira {
+  from { opacity: 0.9; transform: translate(0, -50%) scale(0.6); }
+  to { opacity: 0; transform: translate(-60%, -90%) scale(1.3); }
+}
+
+/* 3, 2, 1, JÁ! bem grande no meio */
+.contagem {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: none;
+  font-size: min(13rem, 35vw, 35vh);
+  font-weight: bold;
+  color: #ff5722;
+  -webkit-text-stroke: 6px white;
+  paint-order: stroke fill;
+  white-space: nowrap;
+}
+
+.contagem:empty {
+  display: none;
+}
+
+.contagem.pulou {
+  animation: contagem 1s ease-out;
+}
+
+@keyframes contagem {
+  from { transform: translate(-50%, -50%) scale(0.2); }
+  30% { transform: translate(-50%, -50%) scale(1.15); }
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Pódio no fim da corrida */
+.podio-fundo {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vh;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.45);
+  animation: aparecer-fundo 0.4s ease-out;
+}
+
+@keyframes aparecer-fundo {
+  from { opacity: 0; }
+}
+
+.podio-titulo {
+  font-size: min(3rem, 8vw, 7vh);
+  font-weight: bold;
+  color: #ffd54f;
+  text-shadow: 0 3px 0 #6d4c00;
+  text-align: center;
+  animation: chamando 0.7s ease-in-out infinite alternate;
+}
+
+.podio {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.podio .coluna {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(9rem, 27vw);
+}
+
+.podio .no-podio {
+  font-size: min(5rem, 15vw, 10vh);
+  line-height: 1.1;
+}
+
+.podio .lugar-1 .no-podio {
+  animation: pulo 0.5s ease-in-out infinite alternate;
+}
+
+.podio .trofeu {
+  font-size: min(4rem, 12vw, 8vh);
+  animation: trofeu 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes trofeu {
+  from { transform: rotate(-12deg) scale(1); filter: drop-shadow(0 0 6px gold); }
+  to { transform: rotate(12deg) scale(1.15); filter: drop-shadow(0 0 18px gold); }
+}
+
+.podio .degrau {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0.3em;
+  border-radius: 12px 12px 0 0;
+  font-size: min(2.6rem, 8vw, 6vh);
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.podio .velocidade {
+  font-size: 0.45em;
+}
+
+.podio .lugar-1 .degrau {
+  height: min(12rem, 22vh);
+  background: #fbc02d;
+}
+
+.podio .lugar-2 .degrau {
+  height: min(8.5rem, 16vh);
+  background: #b0bec5;
+}
+
+.podio .lugar-3 .degrau {
+  height: min(6rem, 11vh);
+  background: #d4895a;
+}
+
+.podio-fundo .correr-de-novo {
+  min-width: 0;
+  padding: 0.6rem 1.5rem;
+  font-size: min(1.8rem, 6vw, 4.5vh);
+}
+
+.podio-fundo .correr-de-novo .figura {
+  font-size: min(3rem, 10vw, 6vh);
 }

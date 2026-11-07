@@ -4,6 +4,7 @@ import { useState } from "react";
 import Familia from "./familia";
 import Palavras from "./palavras";
 import Animais from "./animais";
+import Corrida from "./corrida";
 
 export default function Inicio() {
   const [jogo, setJogo] = useState(null);
@@ -23,6 +24,10 @@ export default function Inicio() {
           <span className="figura">🐾</span>
           Encontre os animais
         </button>
+        <button className="escolha" style={{ "--cor": "#ff7043" }} onClick={() => setJogo("corrida")}>
+          <span className="figura">🏁</span>
+          Corrida dos animais
+        </button>
       </div>
     );
   }
@@ -35,6 +40,7 @@ export default function Inicio() {
       {jogo === "familia" && <Familia />}
       {jogo === "palavras" && <Palavras />}
       {jogo === "animais" && <Animais />}
+      {jogo === "corrida" && <Corrida />}
     </>
   );
 }
