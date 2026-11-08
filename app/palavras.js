@@ -14,10 +14,6 @@ const PALAVRAS = [
   { palavra: "FLOR", efeito: "pulsar", desenho: "🌸", comArtigo: "a flor", falar: "Flor!", cor: "#8e24aa", festa: "🌸 🌼 🌷 🦋" },
 ];
 
-const nomeDaPrimeira = {
-  B: "bê", S: "ésse", P: "pê", C: "cê", L: "éle", F: "éfe",
-};
-
 // As palavras vêm em ordem embaralhada, sem repetir até passar por todas
 function embaralhar(evitarPrimeiro) {
   const ordem = PALAVRAS.map((_, i) => i);
@@ -56,7 +52,7 @@ export default function Palavras() {
     () =>
       iniciarBrincadeira(listaRef.current, {
         aoTerminar: () => setIndice(avancar()),
-        falarNoComeco: `Olha ${p.comArtigo}! Toca na letra ${nomeDaPrimeira[p.palavra[0]]}!`,
+        falarNoComeco: `Olha ${p.comArtigo}! Toca na letra ${p.palavra[0]}!`,
       }),
     [p]
   );

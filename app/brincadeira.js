@@ -46,15 +46,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     quadros.add(id);
   }
 
-  // Nome de cada letra em português, para a voz soletrar corretamente
-  // (o alfabeto inteiro, escrito do jeito que se fala)
-  // Com acento a voz fala "tê", "dê"; sem acento ela lê "te" como "ti" e "de" como "di"
-  const nomeDaLetra = {
-    A: "á", B: "bê", C: "cê", D: "dê", E: "é", F: "éfe", G: "gê",
-    H: "agá", I: "i", J: "jota", K: "cá", L: "éle", M: "ême", N: "êne",
-    O: "ó", P: "pê", Q: "quê", R: "érre", S: "ésse", T: "tê", U: "u",
-    V: "vê", W: "dáblio", X: "xis", Y: "ípsilon", Z: "zê",
-  };
 
 
   // Enquanto a voz está falando, os cliques nas letras ficam bloqueados
@@ -264,8 +255,10 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     () => `Quase! Pega!`,
   ];
 
+  // A voz fala a própria letra maiúscula: escrita por extenso ela erra
+  // ("te" vira "ti") e com acento ela lê o acento ("ó acento agudo")
   function nomeLetra(l) {
-    return nomeDaLetra[l] || l;
+    return l.toUpperCase();
   }
 
   function aLetra(texto) {
@@ -282,7 +275,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   }
 
   function soletrar(texto) {
-    return [...texto].map((l) => nomeDaLetra[l] || l).join(", ");
+    return [...texto].map(nomeLetra).join(", ");
   }
 
   // Quanto mais bichos, menores eles ficam (mas nunca pequenos demais para o dedinho)
