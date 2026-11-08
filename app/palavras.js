@@ -15,7 +15,7 @@ const PALAVRAS = [
 ];
 
 const nomeDaPrimeira = {
-  B: "be", S: "esse", P: "pe", C: "ce", L: "ele", F: "efe",
+  B: "bê", S: "ésse", P: "pê", C: "cê", L: "éle", F: "éfe",
 };
 
 // As palavras vêm em ordem embaralhada, sem repetir até passar por todas

@@ -48,11 +48,12 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
 
   // Nome de cada letra em português, para a voz soletrar corretamente
   // (o alfabeto inteiro, escrito do jeito que se fala)
+  // Com acento a voz fala "tê", "dê"; sem acento ela lê "te" como "ti" e "de" como "di"
   const nomeDaLetra = {
-    A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efe", G: "ge",
-    H: "aga", I: "i", J: "jota", K: "ca", L: "ele", M: "eme", N: "ene",
-    O: "o", P: "pe", Q: "que", R: "erre", S: "esse", T: "te", U: "u",
-    V: "ve", W: "dablio", X: "xis", Y: "ipsilon", Z: "ze",
+    A: "á", B: "bê", C: "cê", D: "dê", E: "é", F: "éfe", G: "gê",
+    H: "agá", I: "i", J: "jota", K: "cá", L: "éle", M: "ême", N: "êne",
+    O: "ó", P: "pê", Q: "quê", R: "érre", S: "ésse", T: "tê", U: "u",
+    V: "vê", W: "dáblio", X: "xis", Y: "ípsilon", Z: "zê",
   };
 
 
@@ -229,10 +230,9 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     return itens.find((item) => item.quantas < item.letras.length) || null;
   }
 
-  // Mostra qual letra tocar: só a palavra da vez fica ativa,
-  // a próxima letra dela pisca e a mãozinha pula em cima
+  // Mostra qual letra tocar: só a palavra da vez fica ativa
+  // e a próxima letra dela pisca, crescendo e diminuindo
   function atualizarDicas() {
-    lista.querySelectorAll(".seta").forEach((s) => s.remove());
     lista.querySelectorAll(".letra.proxima").forEach((l) => l.classList.remove("proxima"));
 
     const atual = modoFesta ? null : palavraAtual();
@@ -245,10 +245,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     if (!atual || bando || falando) return;
     const letra = atual.letras[atual.quantas];
     letra.classList.add("proxima");
-    const seta = document.createElement("span");
-    seta.className = "seta";
-    seta.textContent = "👇";
-    letra.appendChild(seta);
   }
 
   // Como a voz chama o bando: "o gato", "dois gatos", "duas vacas"...
@@ -281,13 +277,8 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     const atual = palavraAtual();
     if (!atual || modoFesta) return;
     const letra = nomeLetra(atual.palavra[atual.quantas]);
-    // Se o próximo bando vai ser maior, conta antes, para ela ficar animada
-    const vem = serie.quantos > 1 ? ` Vão vir ${quemVeio(serie.tipo, serie.quantos)}!` : "";
-    falar(
-      novoNome
-        ? `Agora o próximo nome!${vem} Toca na letra ${letra}!`
-        : `${vem} Toca na letra ${letra}!`
-    );
+    // Não conta quantos bichos vêm: é surpresa, e a fala fica curtinha
+    falar(novoNome ? `Agora o próximo nome! Toca na letra ${letra}!` : `Toca na letra ${letra}!`);
   }
 
   function soletrar(texto) {
@@ -365,7 +356,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       }
     );
 
-    atualizarDicas(); // tira a mãozinha enquanto o bando está na tela
+    atualizarDicas(); // a letra para de piscar enquanto o bando está na tela
     proximoQuadro(moverBando);
   }
 
@@ -587,6 +578,9 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     return aoClicar;
   });
 
+  // No computador, o mouse vira uma luvinha grande (some na limpeza)
+  document.body.classList.add("luvinha");
+
   // Já começa mostrando onde tocar (e, se tiver, fala a frase de começo)
   atualizarDicas();
   if (opcoes.falarNoComeco) falar(opcoes.falarNoComeco);
@@ -603,7 +597,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     if (bando) bando.membros.forEach((b) => b.el.remove());
     bando = null;
     document.querySelectorAll(".festa").forEach((el) => el.remove());
-    lista.querySelectorAll(".seta").forEach((s) => s.remove());
+    document.body.classList.remove("luvinha");
     itens.forEach((item, n) => {
       item.removeEventListener("click", cliques[n]);
       item.className = "";
