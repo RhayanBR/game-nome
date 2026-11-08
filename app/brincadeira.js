@@ -369,8 +369,10 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   // Quando todos chegaram e a voz terminou, o bando pega as letras e sai correndo
   function talvezPegarAsLetras() {
     const meu = bando;
-    if (!meu.falouChegada || !meu.membros.every((b) => b.estado === "esperando")) return;
-    meu.membros.forEach((b) => {
+    // Os que ela já pegou na chegada não contam: só os que ainda estão soltos
+    const soltos = meu.membros.filter((b) => b.estado === "chegando" || b.estado === "esperando");
+    if (!meu.falouChegada || soltos.length === 0 || !soltos.every((b) => b.estado === "esperando")) return;
+    soltos.forEach((b) => {
       b.estado = "pegando";
       b.el.classList.add("carregando");
     });
@@ -476,8 +478,8 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     evento.preventDefault();
     evento.stopPropagation();
     const meu = bando;
-    // Só dá para pegar depois que ele pegou a letra
-    if (!meu || !["pegando", "fugindo"].includes(b.estado)) return;
+    // Dá para pegar a qualquer hora, até chegando e com a voz ainda falando
+    if (!meu || b.estado === "indo" || b.estado === "foi") return;
 
     const caixa = b.el.getBoundingClientRect();
     explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⭐", "✨", "🌟", "🎉"], meu.quantos > 2 ? 12 : 25, 180);
