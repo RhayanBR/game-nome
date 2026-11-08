@@ -870,7 +870,7 @@ li .foto svg {
 }
 
 .contagem.pulou {
-  animation: contagem 1s ease-out;
+  animation: contagem 0.65s ease-out; /* cabe no passo da contagem (700 ms) */
 }
 
 @keyframes contagem {

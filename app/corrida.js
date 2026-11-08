@@ -4,7 +4,7 @@ import { criarVoz } from "./voz";
 
 // "Corrida dos animais": 5 bichos entram na pista um de cada vez, ela escolhe
 // quem acha que corre mais, a voz conta 3, 2, 1, Já! e eles correm até a
-// chegada. No fim aparece o pódio dos 3 primeiros, com o troféu para o 1º.
+// chegada. Quando o último chega, aparece o pódio dos 3 primeiros, com o troféu para o 1º.
 export default function Corrida() {
   const raizRef = useRef(null);
   const [rodada, setRodada] = useState(0);
@@ -96,6 +96,8 @@ const RITMO = {
 const TEMPO = 40; // com velocidade 1 leva 40 s para chegar; com 9.99, uns 4 s
 const DIFERENCA = 1; // velocidades bem diferentes, para dar para ver quem é mais rápido
 const ORDINAIS = ["primeiro", "segundo", "terceiro", "quarto", "quinto"];
+const VELOCIDADE_ENTRADA = 800; // pixels por segundo: entram rapidinho, para ela não esperar
+const PASSO_DA_CONTAGEM = 700; // ms entre o 3, 2, 1 e o Já!
 
 const maiuscula = (texto) => texto[0].toUpperCase() + texto.slice(1);
 
@@ -223,7 +225,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
       return;
     }
     const c = criarCorredor(tipos[i], i);
-    voz.somEFala(c.tipo, `Chegou ${c.tipo.nome}!`, () => depois(() => entrar(i + 1), 300));
+    voz.somEFala(c.tipo, `Chegou ${c.tipo.nome}!`, () => entrar(i + 1));
   }
 
   function comecarEscolha() {
@@ -242,7 +244,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
     raias[c.raia].classList.add("escolhida");
     c.el.classList.add("escolhido");
     trocarTexto(mensagem, `⭐ ${c.tipo.palavra}`, "aparecer");
-    voz.somEFala(c.tipo, `Você escolheu ${c.tipo.nome}! Vamos ver se ${c.tipo.pronome} corre mais!`, contar);
+    // Fala curtinha: assim que termina, já começa a contagem
+    voz.somEFala(c.tipo, `Você escolheu ${c.tipo.nome}!`, contar);
   }
 
   // 3, 2, 1, Já!
@@ -254,9 +257,9 @@ function iniciarCorrida(raiz, mostrarResultado) {
         trocarTexto(contagem, numero, "pulou");
         voz.falar(falas[i]);
         if (i === numeros.length - 1) largar();
-      }, i * 1100)
+      }, i * PASSO_DA_CONTAGEM)
     );
-    depois(() => (contagem.textContent = ""), numeros.length * 1100);
+    depois(() => (contagem.textContent = ""), numeros.length * PASSO_DA_CONTAGEM);
   }
 
   function largar() {
@@ -277,7 +280,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
       explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⭐", "✨", "🌟"], 20, 120);
       voz.falar(`${maiuscula(c.tipo.nome)} chegou primeiro!`);
     }
-    if (lugar === 3) depois(fimDaCorrida, 1500);
+    // Só acaba quando o último cruzar a chegada (ela quer ver o caracol chegar!)
+    if (lugar === corredores.length) depois(fimDaCorrida, 1500);
   }
 
   // Pódio: troféu para o primeiro e a voz dá os parabéns
@@ -322,7 +326,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
     for (const c of corredores) {
       // Entrando: anda até a linha de largada
       if (c.recuo > 0) {
-        c.recuo = Math.max(0, c.recuo - 380 * s);
+        c.recuo = Math.max(0, c.recuo - VELOCIDADE_ENTRADA * s);
         if (c.recuo === 0 && fase !== "correndo") c.el.classList.remove("correndo");
       }
 
@@ -351,7 +355,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
   }
 
   trocarTexto(mensagem, "Corrida dos animais", "aparecer");
-  voz.falar("Vamos ver a corrida dos animais!", () => depois(() => entrar(0), 300));
+  voz.falar("Vamos ver a corrida dos animais!", () => entrar(0));
   quadro = requestAnimationFrame(mover);
 
   // Limpeza: para voz, animação e timers e deixa a pista vazia
