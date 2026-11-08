@@ -4,7 +4,8 @@ import { criarVoz } from "./voz";
 
 // "Corrida dos animais": 5 bichos entram na pista um de cada vez, ela escolhe
 // quem acha que corre mais, a voz conta 3, 2, 1, Já! e eles correm até a
-// chegada. Quando o último chega, aparece o pódio dos 3 primeiros, com o troféu para o 1º.
+// chegada. Durante a corrida, cada toque num bicho deixa ele 0.5 mais rápido.
+// Quando o último chega, aparece o pódio dos 3 primeiros, com o troféu para o 1º.
 export default function Corrida() {
   const raizRef = useRef(null);
   const [rodada, setRodada] = useState(0);
@@ -97,7 +98,8 @@ const TEMPO = 40; // com velocidade 1 leva 40 s para chegar; com 9.99, uns 4 s
 const DIFERENCA = 1; // velocidades bem diferentes, para dar para ver quem é mais rápido
 const ORDINAIS = ["primeiro", "segundo", "terceiro", "quarto", "quinto"];
 const VELOCIDADE_ENTRADA = 800; // pixels por segundo: entram rapidinho, para ela não esperar
-const PASSO_DA_CONTAGEM = 700; // ms entre o 3, 2, 1 e o Já!
+const PASSO_DA_CONTAGEM = 1000; // 3, 2, 1, Já! contando de verdade, um por segundo
+const EMPURRAO = 0.5; // quanto cada toque dela deixa o bicho mais rápido
 
 const maiuscula = (texto) => texto[0].toUpperCase() + texto.slice(1);
 
@@ -136,8 +138,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
   const contagem = raiz.querySelector(".contagem");
 
   const tipos = escolherCorredores();
-  // Todos correm a mesma distância sem parar, então quem é mais veloz chega antes
-  const ordem = [...tipos].sort((a, b) => b.velocidade - a.velocidade);
+  // Ordem de chegada: ela pode acelerar os bichos tocando neles, então só sabe no fim
+  const ordem = [];
   let fase = "entrando"; // entrando → escolhendo → contando → correndo → fim
   let escolhido = null;
   let chegaram = 0;
@@ -197,7 +199,7 @@ function iniciarCorrida(raiz, mostrarResultado) {
     // p: quanto da pista já correu (0 = largada, 1 = chegada)
     // recuo: quanto ainda falta andar para chegar na largada quando está entrando
     const c = { el, tipo, raia, p: 0, recuo: m.inicio + m.tamanho * 2 + 20, tamanho: 0, poeira: 0 };
-    const tocar = (evento) => escolher(c, evento);
+    const tocar = (evento) => (fase === "correndo" ? acelerar(c, evento) : escolher(c, evento));
     el.addEventListener("pointerdown", tocar);
     raias[raia].onpointerdown = tocar; // a raia inteira também serve para escolher
     corredores.push(c);
@@ -225,7 +227,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
       return;
     }
     const c = criarCorredor(tipos[i], i);
-    voz.somEFala(c.tipo, `Chegou ${c.tipo.nome}!`, () => entrar(i + 1));
+    // Só o nome, curtinho: a apresentação fica rápida e ela já vê o próximo chegar
+    voz.somEFala(c.tipo, `${maiuscula(c.tipo.nome)}!`, () => entrar(i + 1));
   }
 
   function comecarEscolha() {
@@ -269,8 +272,21 @@ function iniciarCorrida(raiz, mostrarResultado) {
     corredores.forEach((c) => c.el.classList.add("correndo"));
   }
 
+  // Toque num bicho correndo: ele ganha um empurrão e fica mais rápido
+  function acelerar(c, evento) {
+    evento.preventDefault();
+    if (c.chegou) return;
+    c.tipo.velocidade += EMPURRAO;
+    c.el.querySelector(".placa").textContent = `⚡${c.tipo.velocidade.toFixed(2)}`;
+    // As perninhas também andam mais depressa
+    c.el.style.setProperty("--ritmo", RITMO[c.tipo.jeito] * Math.min(1, CORREDORES[c.tipo.palavra].velocidade / c.tipo.velocidade) + "s");
+    const caixa = c.el.getBoundingClientRect();
+    explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⚡", "✨"], 6, 60);
+  }
+
   function cruzouAChegada(c) {
     c.chegou = true;
+    ordem.push(c.tipo);
     chegaram++;
     const lugar = chegaram;
     const medalha = c.el.querySelector(".medalha");
@@ -355,7 +371,8 @@ function iniciarCorrida(raiz, mostrarResultado) {
   }
 
   trocarTexto(mensagem, "Corrida dos animais", "aparecer");
-  voz.falar("Vamos ver a corrida dos animais!", () => entrar(0));
+  voz.falar("Corrida dos animais!", () => entrar(0));
+  document.body.classList.add("luvinha"); // o mouse vira a luvinha, igual nos jogos de soletrar
   quadro = requestAnimationFrame(mover);
 
   // Limpeza: para voz, animação e timers e deixa a pista vazia
@@ -374,5 +391,6 @@ function iniciarCorrida(raiz, mostrarResultado) {
     mensagem.textContent = "";
     mensagem.className = "mensagem";
     contagem.textContent = "";
+    document.body.classList.remove("luvinha");
   };
 }
