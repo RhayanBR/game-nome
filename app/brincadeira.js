@@ -3,7 +3,9 @@ import { vozBrasileira } from "./voz";
 import { pararSom, tocarSom } from "./sons";
 
 // A série de bichos continua de uma palavra para a outra (e de um nome para o outro):
-// vem 1 gato; se ela pega, vêm 2 gatos; depois 4; depois 8; e aí recomeça com outro bicho.
+// vem 1 gato; se ela toca nele antes de ele pegar a letra (protegeu a letra!),
+// na próxima letra vêm 2 gatos; depois 4; depois 8; e aí recomeça com outro bicho.
+// Se algum bicho consegue pegar a letra, ela corre atrás e na próxima letra volta a vir 1.
 const MAXIMO_DO_BANDO = 8;
 const serie = { tipo: null, quantos: 1 };
 
@@ -309,6 +311,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       item, tipo, pedaco, quantos,
       membros: [],
       pegos: 0,
+      pegouALetra: false, // algum bicho conseguiu pegar a letra antes de ela tocar
       falouChegada: false,
       tempoLembrete: 6,
       ultimo: performance.now(),
@@ -372,6 +375,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     // Os que ela já pegou na chegada não contam: só os que ainda estão soltos
     const soltos = meu.membros.filter((b) => b.estado === "chegando" || b.estado === "esperando");
     if (!meu.falouChegada || soltos.length === 0 || !soltos.every((b) => b.estado === "esperando")) return;
+    meu.pegouALetra = true;
     soltos.forEach((b) => {
       b.estado = "pegando";
       b.el.classList.add("carregando");
@@ -379,7 +383,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     meu.item.letras.forEach((l, i) => {
       if (i < meu.pedaco.length) l.classList.add("levada");
     });
-    const n = meu.quantos;
+    const n = soltos.length;
     falar(`Ih! ${quemVeio(meu.tipo, n)} ${n === 1 ? "pegou" : "pegaram"} ${aLetra(meu.pedaco)}!`, () => {
       if (bando !== meu || meu.pegos > 0) return;
       falar(`Corre, pega ${n === 1 ? meu.tipo.pronome : "todos"}!`);
@@ -493,12 +497,19 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
 
     // Ainda tem bicho solto: a voz vai contando "um, dois, três..."
     if (meu.pegos < meu.quantos) {
-      falar(`${numero(meu.pegos, meu.tipo)}!`);
+      // Essa fala corta a da chegada; sem isso os que sobraram nunca pegariam a letra
+      falar(`${numero(meu.pegos, meu.tipo)}!`, () => {
+        if (bando !== meu || meu.pegouALetra) return;
+        meu.falouChegada = true;
+        talvezPegarAsLetras();
+      });
       return;
     }
 
-    // Pegou todos! Na próxima vem o dobro (até 8; depois recomeça com outro bicho)
-    if (serie.quantos < MAXIMO_DO_BANDO) {
+    // Protegeu a letra (pegou todos antes de chegarem nela): na próxima vem o dobro
+    // (até 8; depois recomeça com outro bicho). Se a letra foi levada, volta a vir 1.
+    const protegeu = !meu.pegouALetra;
+    if (protegeu && serie.quantos < MAXIMO_DO_BANDO) {
       serie.quantos *= 2;
     } else {
       serie.quantos = 1;
@@ -515,7 +526,10 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     const n = meu.quantos;
     const soletrado = soletrar(meu.pedaco);
     const aee = n === 1 ? `Aee! Pegou ${meu.tipo.nome}!` : `Aee! Pegou ${n === 2 ? "os dois" : "todos"}!`;
+    // Protegendo, ela só salvou a letra nova; senão o bando devolve tudo o que levou
     const devolveu = `${eles(meu.tipo, n)} ${n === 1 ? "devolveu" : "devolveram"}`;
+    const salvou = (tudo) =>
+      protegeu ? `Você protegeu a letra ${nomeLetra(meu.pedaco.slice(-1))}!` : `${devolveu} ${tudo}!`;
     if (item.quantas === item.letras.length) {
       item.classList.add("completo");
       festaDoNome(item);
@@ -525,7 +539,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       const todosCompletos = itens.every((i) => i.classList.contains("completo"));
       somEFala(
         meu.tipo,
-        `${aee} ${devolveu} ${oQue}! ${soletrado}... ${item.dataset.falar}`,
+        `${aee} ${salvou(oQue)} ${soletrado}... ${item.dataset.falar}`,
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
           : () => pedirProximaLetra(true)
@@ -533,7 +547,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     } else {
       somEFala(
         meu.tipo,
-        `${aee} ${devolveu} ${aLetra(meu.pedaco)}! Tchau!`,
+        `${aee} ${salvou(aLetra(meu.pedaco))} Tchau!`,
         () => pedirProximaLetra(false)
       );
     }
