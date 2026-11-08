@@ -86,7 +86,7 @@ li.esperando {
   cursor: default;
 }
 
-/* Nos jogos de soletrar e na corrida, o mouse vira uma luvinha grande (a ponta do dedo é o clique) */
+/* Nos jogos de soletrar, na corrida e nos porquinhos, o mouse vira uma luvinha grande (a ponta do dedo é o clique) */
 body.luvinha,
 body.luvinha * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M13 44 L41 44 L43 54 L11 54 Z' fill='%23ffb3d1'/><path d='M13 45 C9 39 10 31 12 27 L12 9 C12 3 21 3 21 9 L21 22 C22 18 29 18 29 23 C30 19 37 19 37 24 C38 21 44 22 44 27 L44 37 C44 42 41 45 37 45 Z' fill='white'/><path d='M29 23 L29 27 M37 24 L37 28' fill='none'/><path d='M12 31 C17 28 27 28 31 32 C27 37 18 37 13 36' fill='white'/></g><path d='M14 49.5 L40 49.5' stroke='%232b2b2b' stroke-width='1.5' stroke-linecap='round'/></svg>") 16 4, pointer !important;
@@ -107,7 +107,10 @@ body.luvinha .pista.correndo .raia,
 body.luvinha .pista.correndo .corredor,
 body.luvinha .pista.correndo .corredor *,
 body.luvinha button,
-body.luvinha button * {
+body.luvinha button *,
+body.luvinha .porquinhos.pode-soprar .lobo,
+body.luvinha .porquinhos.pode-soprar .lobo *,
+body.luvinha .escada.aparece {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><g fill='white'><rect x='13' y='10' width='7' height='22' rx='3.5' transform='rotate(-14 16.5 21)'/><rect x='21' y='4' width='7' height='26' rx='3.5' transform='rotate(-4 24.5 17)'/><rect x='29' y='5' width='7' height='26' rx='3.5' transform='rotate(5 32.5 18)'/><rect x='37' y='11' width='7' height='21' rx='3.5' transform='rotate(15 40.5 21)'/><rect x='7' y='22' width='7' height='16' rx='3.5' transform='rotate(-40 10.5 30)'/><path d='M12 30 C12 25 44 25 44 30 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z'/></g></g></svg>") 28 28, pointer !important;
 }
 
@@ -124,7 +127,10 @@ body.luvinha .pista.correndo .raia:active,
 body.luvinha .pista.correndo .corredor:active,
 body.luvinha .pista.correndo .corredor *:active,
 body.luvinha button:active,
-body.luvinha button *:active {
+body.luvinha button *:active,
+body.luvinha .porquinhos.pode-soprar .lobo:active,
+body.luvinha .porquinhos.pode-soprar .lobo *:active,
+body.luvinha .escada.aparece:active {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><path d='M12 24 C12 16 17 14 20 17 C21 13 27 13 28 17 C29 13 35 13 36 17 C38 14 44 16 44 22 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z' fill='white'/><path d='M20 17 L20 24 M28 17 L28 24 M36 17 L36 24' fill='none'/><path d='M11 30 C17 27 28 27 32 31 C28 36 18 37 12 36' fill='white'/></g></svg>") 28 28, pointer !important;
 }
 
@@ -616,7 +622,26 @@ li .foto svg {
   }
 }
 
-/* Celular em pé: os 4 botões do menu ficam 2 em cada linha */
+/* Celular deitado: os 5 botões do menu cabem numa linha só */
+@media (max-height: 500px) and (orientation: landscape) {
+  .menu {
+    flex-wrap: nowrap;
+    gap: 0.6rem;
+  }
+
+  .menu .escolha {
+    min-width: 0;
+    width: 18vw;
+    padding: 0.7rem 0.3rem;
+    font-size: min(1.3rem, 2.6vw);
+  }
+
+  .menu .escolha .figura {
+    font-size: 2.8rem;
+  }
+}
+
+/* Celular em pé: os botões do menu ficam 2 em cada linha */
 @media (max-width: 600px) {
   .menu {
     gap: 1rem;
@@ -996,4 +1021,437 @@ li .foto svg {
 
 .podio-fundo .correr-de-novo .figura {
   font-size: min(3rem, 10vw, 6vh);
+}
+
+/* ---------- Os três porquinhos ---------- */
+.porquinhos {
+  --lobo: min(24vw, 30vh);
+  --casa: min(46vw, 58vh);
+  --chao: 16vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background: linear-gradient(#81d4fa, #e1f5fe);
+}
+
+.porquinhos .chao {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--chao);
+  background: #7cb342;
+  border-top: 6px solid #689f38;
+}
+
+/* A casa fica à direita; os porquinhos ficam na frente dela */
+.porquinhos .casa {
+  position: absolute;
+  right: 4vw;
+  bottom: calc(var(--chao) - 2vh);
+  width: var(--casa);
+}
+
+.casa.chegando {
+  animation: casa-chega 0.9s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+@keyframes casa-chega {
+  from {
+    transform: translateX(70vw);
+  }
+}
+
+.desenho-casa {
+  transform-origin: 50% 100%;
+}
+
+.desenho-casa svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Madeira: estremece a cada sopro */
+.desenho-casa.tremendo {
+  animation: tremer-casa 0.4s;
+}
+
+@keyframes tremer-casa {
+  20% { transform: translateX(-3%) rotate(-2deg); }
+  40% { transform: translateX(3%) rotate(2deg); }
+  60% { transform: translateX(-2%) rotate(-1deg); }
+  80% { transform: translateX(2%) rotate(1deg); }
+}
+
+/* Palha: a casa sai voando com o vento */
+.desenho-casa.voando {
+  animation: voar-casa 0.8s ease-in forwards;
+}
+
+@keyframes voar-casa {
+  to {
+    transform: translateX(50%) scale(0.2) rotate(30deg);
+    opacity: 0;
+  }
+}
+
+/* Madeira: no último sopro, desaba */
+.desenho-casa.desabando {
+  animation: desabar 0.9s ease-in forwards;
+}
+
+@keyframes desabar {
+  30% { transform: rotate(-6deg); }
+  to {
+    transform: translateY(10%) scaleY(0.1) rotate(4deg);
+    opacity: 0;
+  }
+}
+
+/* Os porquinhos (o emoji olha para a esquerda, para o lobo) */
+.porcos {
+  position: absolute;
+  right: -3%;
+  bottom: -4%;
+  display: flex;
+  align-items: flex-end;
+  font-size: calc(var(--casa) * 0.2);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.porco,
+.porco > span,
+.porcos .bolo {
+  display: inline-block;
+}
+
+.porco > span {
+  transform-origin: 50% 100%;
+  animation: porco-respira 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes porco-respira {
+  to { transform: scale(1.05, 0.92); }
+}
+
+/* Fugindo para a direita, virado para lá, aos pulinhos */
+.porco.fugindo {
+  animation: porco-foge 1.6s ease-in forwards;
+}
+
+@keyframes porco-foge {
+  10% { transform: translateY(-30%); }
+  to { transform: translateX(100vw); }
+}
+
+.porco.fugindo > span {
+  animation: porco-corre 0.16s ease-in-out infinite alternate;
+}
+
+@keyframes porco-corre {
+  from { transform: scaleX(-1); }
+  to { transform: scaleX(-1) translateY(-25%) rotate(-14deg); }
+}
+
+/* O bolo que os porquinhos dão para o lobo */
+.porcos .bolo {
+  animation: oferecer-bolo 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes oferecer-bolo {
+  to { transform: translate(-15%, -20%) rotate(-10deg); }
+}
+
+/* A escada aparece brilhando encostada na casa de tijolo */
+.escada {
+  position: absolute;
+  left: -4%;
+  bottom: 0;
+  z-index: 2;
+  font-size: calc(var(--casa) * 0.5);
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.3s;
+}
+
+.escada.aparece,
+.escada.usada {
+  opacity: 1;
+  transform: rotate(10deg);
+}
+
+.escada.aparece {
+  pointer-events: auto;
+  animation: brilhar-escada 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes brilhar-escada {
+  from { filter: drop-shadow(0 0 4px gold); scale: 1; }
+  to { filter: drop-shadow(0 0 24px gold) brightness(1.2); scale: 1.12; }
+}
+
+/* O lobo, à esquerda. O pé (meio de baixo) é o ponto de onde ele anda e encolhe */
+.lobo {
+  position: absolute;
+  left: 3vw;
+  bottom: calc(var(--chao) - 3vh);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--lobo);
+  transform-origin: 50% 100%;
+  transition: transform 1s ease-in-out, opacity 0.6s;
+}
+
+.porquinhos.pode-soprar .lobo {
+  cursor: pointer;
+}
+
+/* Subindo na escada e na festa, a barra e o número ficam escondidos */
+.lobo.andando .folego,
+.lobo.andando .numero-sopro,
+.lobo.amigo .folego,
+.lobo.amigo .numero-sopro {
+  visibility: hidden;
+}
+
+.lobo.entrando {
+  opacity: 0;
+  transition: transform 1s ease-in, opacity 1s ease-in;
+}
+
+/* Barra de "super fôlego": um ventinho acende a cada sopro */
+.folego {
+  display: flex;
+  gap: 0.04em;
+  font-size: 18%;
+  line-height: 1.2;
+}
+
+.gomo {
+  opacity: 0.25;
+  filter: grayscale(1);
+  transition: opacity 0.2s, filter 0.2s, scale 0.2s;
+}
+
+.gomo.cheio {
+  opacity: 1;
+  filter: none;
+  scale: 1.2;
+}
+
+/* Número de sopros em cima do lobo: 1... 2... */
+.numero-sopro {
+  height: 1.2em;
+  font-size: 32%;
+  font-weight: bold;
+  line-height: 1.2;
+  color: #e53935;
+  text-shadow: 0 3px 0 white;
+}
+
+.numero-sopro.pulou {
+  animation: numero-pula 0.4s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes numero-pula {
+  from { scale: 0.2; }
+}
+
+/* A cara do lobo estica para os lados conforme enche as bochechas */
+.lobo .cara {
+  position: relative;
+  line-height: 1;
+  transform: scaleX(calc(1 + var(--inflar, 0) * 0.18));
+  transition: transform 0.2s, translate 0.5s, rotate 0.5s, scale 0.5s;
+}
+
+.lobo .cara.enchendo {
+  animation: encher 0.25s;
+}
+
+@keyframes encher {
+  50% { scale: 1.12; }
+}
+
+.lobo.soprando .cara {
+  animation: soprar 0.8s;
+}
+
+@keyframes soprar {
+  20% { translate: 8% 0; scale: 1.15 0.9; }
+  70% { translate: 12% 0; }
+}
+
+.bochecha {
+  position: absolute;
+  top: 60%;
+  width: 24%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 138, 128, 0.85);
+  opacity: calc(var(--inflar, 0) * 1.5);
+  transform: translate(-50%, -50%) scale(calc(0.3 + var(--inflar, 0) * 0.9));
+  transition: transform 0.2s, opacity 0.2s, background 0.3s;
+  pointer-events: none;
+}
+
+.bochecha.esquerda { left: 26%; }
+.bochecha.direita { left: 74%; }
+
+.espiral,
+.tonto {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.espiral {
+  top: 30%;
+  font-size: 22%;
+}
+
+.espiral.esquerda { left: 24%; }
+.espiral.direita { left: 54%; }
+
+.tonto {
+  top: -18%;
+  left: 30%;
+  font-size: 32%;
+}
+
+/* Cansado: senta, bochecha vermelha e olhos de espiral */
+.lobo.cansado .cara {
+  translate: 0 15%;
+  rotate: -12deg;
+  scale: 1 0.88;
+}
+
+.lobo.cansado .bochecha {
+  opacity: 1;
+  background: #e53935;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.lobo.cansado .espiral {
+  opacity: 1;
+  animation: girar-espiral 0.9s linear infinite;
+}
+
+.lobo.cansado .tonto {
+  opacity: 1;
+  animation: rodar-tonto 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes girar-espiral {
+  to { rotate: 360deg; }
+}
+
+@keyframes rodar-tonto {
+  from { translate: -30% 0; rotate: -20deg; }
+  to { translate: 30% 0; rotate: 20deg; }
+}
+
+/* Amigo: pulinhos de alegria na porta, comendo bolo */
+.lobo.amigo .cara {
+  animation: pulinho-lobo 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes pulinho-lobo {
+  to { translate: 0 -12%; }
+}
+
+/* Linhas de vento do sopro (desenhadas pelo JavaScript) */
+.porquinhos .vento {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(0 0 3px #4fc3f7);
+}
+
+.porquinhos .vento path {
+  fill: none;
+  stroke: white;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 22 140;
+  stroke-dashoffset: 22;
+  animation: correr-vento 0.9s ease-out forwards;
+}
+
+@keyframes correr-vento {
+  to { stroke-dashoffset: -110; }
+}
+
+/* Pedacinhos voando: palha, tábuas e confete */
+.pedaco {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  line-height: 1;
+  animation: voar-pedaco var(--tempo, 1.5s) ease-out forwards;
+}
+
+@keyframes voar-pedaco {
+  0% { transform: translate(-50%, -50%); opacity: 1; }
+  75% { opacity: 1; }
+  100% {
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--giro));
+    opacity: 0;
+  }
+}
+
+.pedaco.tabua {
+  background: #a0652f;
+  border: 2px solid #5d3a1a;
+  border-radius: 3px;
+}
+
+.pedaco.confete {
+  z-index: 6;
+  width: 12px;
+  height: 18px;
+  animation-timing-function: linear;
+}
+
+/* Botão grande de jogar de novo, no meio da tela */
+.de-novo-porquinhos {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  translate: -50% -50%;
+  z-index: 7;
+  animation: aparecer-botao 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+/* Celular em pé: sobra céu, então o chão sobe e a cena fica no meio da tela */
+@media (orientation: portrait) {
+  .porquinhos {
+    --chao: 30vh;
+  }
+}
+
+/* Celular deitado: tela baixa, chão mais fino */
+@media (max-height: 500px) {
+  .porquinhos {
+    --chao: 12vh;
+  }
+}
+
+.de-novo-porquinhos {
+  white-space: nowrap;
+  padding: 1rem 2rem;
+  font-size: min(2rem, 7vw);
 }
