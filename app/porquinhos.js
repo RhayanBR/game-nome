@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { criarVoz } from "./voz";
 
-// "Os três porquinhos": ela toca no lobo para ele soprar as casas.
-// Fase 1 (palha): 2 toques e a casa voa. Fase 2 (madeira): 5 toques, a casa treme
-// a cada toque e no 5º desaba. Fase 3 (tijolo): 5 toques e nada acontece: blonk!
-// O lobo fica cansado, aparece uma escada, ela toca nela, o lobo sobe no telhado,
-// entra pela chaminé e os porquinhos dão bolo para ele. Todo mundo vira amigo.
+// "Os três porquinhos": eles chegam fugindo do lobo e ela constrói as casas
+// tocando nas peças (3 palhas, 5 madeiras, 8 tijolos). Os porquinhos entram e
+// aparecem na janela. Aí ela toca no lobo para ele soprar: a palha voa com 2 sopros,
+// a madeira treme e desaba com 5, e a de tijolo nem mexe (blonk!). O lobo fica cansado,
+// aparece uma escada, ela toca nela, o lobo sobe no telhado, entra pela chaminé quente
+// e sai voando para longe soltando fumaça. Os porquinhos ficam felizes para sempre.
 export default function Porquinhos() {
   const raizRef = useRef(null);
   const [rodada, setRodada] = useState(0);
   const [venceu, setVenceu] = useState(false);
 
-  // Cada rodada recomeça da casa de palha
+  // Cada rodada recomeça do "Era uma vez"
   useEffect(() => iniciarPorquinhos(raizRef.current, () => setVenceu(true)), [rodada]);
 
   function jogarDeNovo() {
@@ -23,19 +24,21 @@ export default function Porquinhos() {
     <div className="porquinhos" ref={raizRef}>
       <div className="chao" />
       <div className="casa">
+        <div className="fantasma" />
         <div className="desenho-casa" />
+        <div className="janela" />
         <div className="escada">🪜</div>
-        <div className="porcos" />
+        <div className="porcos">
+          <span className="porco"><span>🐖</span></span>
+          <span className="porco"><span>🐖</span></span>
+          <span className="porco"><span>🐖</span></span>
+        </div>
       </div>
       <div className="lobo">
         <div className="folego" />
         <div className="numero-sopro" />
-        <div className="cara">
-          🐺
-          <span className="bochecha esquerda" />
-          <span className="bochecha direita" />
-          <span className="espiral esquerda">🌀</span>
-          <span className="espiral direita">🌀</span>
+        <div className="corpo-lobo">
+          <div dangerouslySetInnerHTML={{ __html: LOBO }} />
           <span className="tonto">💫</span>
         </div>
       </div>
@@ -49,29 +52,69 @@ export default function Porquinhos() {
   );
 }
 
-const SOPROS = [2, 5, 5]; // quantos toques no lobo em cada casa
-const NUMEROS = ["", "Um", "Dois", "Três", "Quatro", "Cinco"];
-const NOMES_DAS_FASES = ["palha", "madeira", "tijolo"];
+const PECAS = [3, 5, 8]; // quantas peças ela toca para construir cada casa
+const SOPROS = [2, 5, 5]; // quantos toques no lobo para soprar cada casa
+const NUMEROS = ["", "Um", "Dois", "Três", "Quatro", "Cinco", "Seis", "Sete", "Oito"];
+const FASES = [
+  { nome: "palha", peca: "🌾", pedir: "Vamos construir uma casa de palha! Toca na palha!" },
+  { nome: "madeira", peca: "🪵", pedir: "Agora uma casa de madeira! Toca na madeira!" },
+  { nome: "tijolo", peca: "🧱", pedir: "Agora uma casa de tijolo, bem forte! Toca nos tijolos!" },
+];
 
-// As casinhas, desenhadas em SVG (todas no mesmo tamanho: 200 x 190)
+// O lobo de corpo inteiro, olhando para a direita (para a casa).
+// bochecha-lobo enche com --inflar; boca-o aparece soprando; olhos-tontos quando cansa.
+const LOBO = `<svg viewBox="0 0 120 160">
+<g stroke="#3a3f45" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M36 108 C12 106 2 84 8 64 C16 80 26 88 42 94 Z" fill="#7d838b"/>
+  <rect x="40" y="118" width="14" height="30" rx="6" fill="#7d838b"/>
+  <rect x="62" y="118" width="14" height="30" rx="6" fill="#7d838b"/>
+  <ellipse cx="45" cy="151" rx="11" ry="6" fill="#5f656c"/>
+  <ellipse cx="72" cy="151" rx="11" ry="6" fill="#5f656c"/>
+  <ellipse cx="58" cy="104" rx="27" ry="30" fill="#8d939b"/>
+  <ellipse cx="63" cy="110" rx="15" ry="20" fill="#d5d9de" stroke="none"/>
+  <path d="M72 88 L88 106" stroke-width="10" stroke="#8d939b"/>
+  <path d="M44 88 L34 108" stroke-width="10" stroke="#8d939b"/>
+  <polygon points="40,40 44,10 58,30" fill="#8d939b"/>
+  <polygon points="60,28 72,6 78,34" fill="#8d939b"/>
+  <polygon points="45,32 46,18 53,29" fill="#f8bbd0" stroke="none"/>
+  <polygon points="65,27 71,15 73,30" fill="#f8bbd0" stroke="none"/>
+  <circle cx="60" cy="52" r="24" fill="#8d939b"/>
+  <ellipse cx="84" cy="62" rx="19" ry="11" fill="#d5d9de"/>
+  <ellipse cx="101" cy="57" rx="5.5" ry="4.5" fill="#222"/>
+  <ellipse class="bochecha-lobo" cx="74" cy="66" rx="9" ry="8" fill="#ff8a80" stroke="none"/>
+  <path class="boca" d="M82 70 Q90 74 98 67" fill="none"/>
+  <circle class="boca-o" cx="100" cy="68" r="4.5" fill="#5d1a1a"/>
+  <ellipse cx="60" cy="45" rx="6.5" ry="7.5" fill="white"/>
+  <ellipse cx="75" cy="43" rx="5.5" ry="6.5" fill="white"/>
+  <g class="pupilas" fill="#222" stroke="none"><circle cx="62" cy="46" r="3.2"/><circle cx="77" cy="44" r="2.8"/></g>
+  <g class="olhos-tontos" fill="none" stroke="#1565c0" stroke-width="1.6">
+    <path d="M60 45a1.5 1.5 0 1 1 1.5 1.5a3 3 0 1 1 -3 -3a4.5 4.5 0 1 1 4.5 4.5"/>
+    <path d="M75 43a1.3 1.3 0 1 1 1.3 1.3a2.6 2.6 0 1 1 -2.6 -2.6a3.9 3.9 0 1 1 3.9 3.9"/>
+  </g>
+  <path d="M53 35 L65 39 M71 35 L80 37" fill="none"/>
+</g>
+</svg>`;
+
+// As casinhas, desenhadas em SVG (todas 200 x 190, com a janela no mesmo lugar:
+// x 40 a 96, y 100 a 140, onde os porquinhos aparecem)
 const CASAS = [
   // Palha: amarelinha, com fios de palha no telhado e na parede
   `<svg viewBox="0 0 200 190">
     <rect x="30" y="85" width="140" height="100" fill="#f3d878" stroke="#b8862b" stroke-width="3"/>
-    <path d="M42 90v92M56 90v92M70 90v92M130 90v92M144 90v92M158 90v92" stroke="#d9b24f" stroke-width="3"/>
+    <path d="M110 90v92M158 90v92M34 150h6M100 150h6" stroke="#d9b24f" stroke-width="3"/>
     <polygon points="100,8 194,88 6,88" fill="#e6b84c" stroke="#b8862b" stroke-width="3" stroke-linejoin="round"/>
     <path d="M100 14L30 84M100 14L60 84M100 14L100 84M100 14L140 84M100 14L170 84" stroke="#c99a35" stroke-width="3"/>
-    <path d="M84 185v-36a16 16 0 0 1 32 0v36z" fill="#8d6e3a" stroke="#6b4f22" stroke-width="3"/>
+    <rect x="40" y="100" width="56" height="40" fill="#fff3c4" stroke="#8d6e3a" stroke-width="4"/>
+    <path d="M118 185v-38a15 15 0 0 1 30 0v38z" fill="#8d6e3a" stroke="#6b4f22" stroke-width="3"/>
   </svg>`,
-  // Madeira: tábuas marrons deitadas, janela com cruz
+  // Madeira: tábuas marrons deitadas
   `<svg viewBox="0 0 200 190">
     <rect x="30" y="85" width="140" height="100" fill="#b07842" stroke="#6d4320" stroke-width="3"/>
     <path d="M30 101h140M30 117h140M30 133h140M30 149h140M30 165h140" stroke="#8a5a2e" stroke-width="3"/>
     <polygon points="100,10 192,88 8,88" fill="#7b4a26" stroke="#4e2e14" stroke-width="3" stroke-linejoin="round"/>
-    <rect x="44" y="108" width="30" height="30" fill="#bfe6ff" stroke="#4e2e14" stroke-width="3"/>
-    <path d="M59 108v30M44 123h30" stroke="#4e2e14" stroke-width="3"/>
-    <rect x="96" y="132" width="32" height="53" fill="#5d3a1a" stroke="#3e2410" stroke-width="3"/>
-    <circle cx="122" cy="160" r="3" fill="#ffd54f"/>
+    <rect x="40" y="100" width="56" height="40" fill="#fff3c4" stroke="#4e2e14" stroke-width="4"/>
+    <rect x="116" y="128" width="34" height="57" fill="#5d3a1a" stroke="#3e2410" stroke-width="3"/>
+    <circle cx="143" cy="158" r="3" fill="#ffd54f"/>
   </svg>`,
   // Tijolo: tijolinhos vermelhos e uma chaminé (o lobo entra por ela no fim)
   `<svg viewBox="0 0 200 190">
@@ -85,10 +128,9 @@ const CASAS = [
     <rect x="130" y="12" width="38" height="10" fill="#8d3a28" stroke="#5e1f12" stroke-width="3"/>
     <rect x="30" y="85" width="140" height="100" fill="url(#tijolos)" stroke="#7f2d1c" stroke-width="3"/>
     <polygon points="100,10 192,88 8,88" fill="#5d4037" stroke="#3e2723" stroke-width="3" stroke-linejoin="round"/>
-    <rect x="44" y="106" width="32" height="32" fill="#bfe6ff" stroke="#3e2723" stroke-width="3"/>
-    <path d="M60 106v32M44 122h32" stroke="#3e2723" stroke-width="3"/>
-    <rect x="98" y="128" width="34" height="57" fill="#4e342e" stroke="#2e1d18" stroke-width="3"/>
-    <circle cx="125" cy="158" r="3" fill="#ffd54f"/>
+    <rect x="40" y="100" width="56" height="40" fill="#fff3c4" stroke="#3e2723" stroke-width="4"/>
+    <rect x="116" y="126" width="36" height="59" fill="#4e342e" stroke="#2e1d18" stroke-width="3"/>
+    <circle cx="145" cy="158" r="3" fill="#ffd54f"/>
   </svg>`,
 ];
 
@@ -213,19 +255,24 @@ function iniciarPorquinhos(raiz, aoVencer) {
   const voz = criarVoz(depois);
   const sons = criarSons();
   const lobo = raiz.querySelector(".lobo");
-  const cara = raiz.querySelector(".cara");
+  const corpo = raiz.querySelector(".corpo-lobo");
   const folego = raiz.querySelector(".folego");
   const contador = raiz.querySelector(".numero-sopro");
   const casa = raiz.querySelector(".casa");
+  const fantasma = raiz.querySelector(".fantasma");
   const desenho = raiz.querySelector(".desenho-casa");
+  const janela = raiz.querySelector(".janela");
   const porcos = raiz.querySelector(".porcos");
   const escada = raiz.querySelector(".escada");
 
   let fase = 0; // 0 palha, 1 madeira, 2 tijolo
+  let obra = 0; // peças já colocadas na casa
   let sopros = 0;
-  // soprando: o lobo aceita toques; escada: espera ela tocar na escada; ocupado: animação
+  // construindo: as peças aceitam toques; soprando: o lobo aceita toques;
+  // escada: espera ela tocar na escada; ocupado: alguma animação acontecendo
   let estado = "ocupado";
   let peDoLobo = null; // onde o pé do lobo fica parado, antes de ele subir na escada
+  let fumegando = false;
 
   function trocarClasse(el, classe) {
     el.classList.remove(classe);
@@ -233,15 +280,15 @@ function iniciarPorquinhos(raiz, aoVencer) {
     el.classList.add(classe);
   }
 
-  // Posição de um elemento dentro da cena (a cena é o "chão" de tudo)
+  // Posição de um elemento dentro da cena
   function caixa(el) {
     const r = el.getBoundingClientRect();
     const base = raiz.getBoundingClientRect();
     return { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height };
   }
 
-  // Pedacinhos voando com o vento (palha, tábuas, confete)
-  function soltarPedaco(conteudo, classe, x, y, props) {
+  // Pedacinhos voando (palha, tábuas, confete, fumaça)
+  function soltarPedaco(conteudo, classe, x, y, props, duracao = 4000) {
     const el = document.createElement("div");
     el.className = `pedaco ${classe}`;
     if (conteudo) el.textContent = conteudo;
@@ -249,24 +296,152 @@ function iniciarPorquinhos(raiz, aoVencer) {
     el.style.top = y + "px";
     for (const [nome, valor] of Object.entries(props)) el.style.setProperty(nome, valor);
     raiz.appendChild(el);
-    depois(() => el.remove(), 4000);
+    depois(() => el.remove(), duracao);
     return el;
   }
 
+  // ---------- Começo: "Era uma vez três porquinhos" ----------
+  function comecar() {
+    colocarCasa(0);
+    // Os porquinhos chegam correndo pela esquerda, e o lobo vem atrás
+    trocarClasse(porcos, "da-esquerda");
+    lobo.classList.add("sem-transicao", "andando");
+    lobo.style.transform = "translateX(-60vw)";
+    void lobo.offsetWidth;
+    lobo.classList.remove("sem-transicao");
+    depois(() => (lobo.style.transform = ""), 500);
+    depois(() => {
+      lobo.classList.remove("andando");
+      lobo.classList.add("esperando");
+      porcos.classList.remove("da-esquerda");
+    }, 2200);
+    voz.falar("Era uma vez três porquinhos! Eles estão fugindo do lobo!", () => depois(comecarObra, 300));
+  }
+
+  // Põe a casa da fase no lugar, ainda sem nenhuma peça (só o contorno clarinho)
+  function colocarCasa(n) {
+    fase = n;
+    obra = 0;
+    sopros = 0;
+    fantasma.innerHTML = CASAS[n].replace('id="tijolos"', 'id="tijolos-fantasma"').replaceAll("url(#tijolos)", "url(#tijolos-fantasma)");
+    desenho.innerHTML = CASAS[n];
+    desenho.className = "desenho-casa";
+    desenho.style.setProperty("--obra", 0);
+    casa.className = `casa casa-${FASES[n].nome}`;
+    janela.className = "janela";
+    janela.innerHTML = "<span>🐷</span><span>🐷</span><span>🐷</span>";
+    porcos.className = "porcos";
+    folego.innerHTML = "";
+    contador.textContent = "";
+  }
+
+  // ---------- Construir a casa: ela toca nas peças ----------
+  function comecarObra() {
+    const total = PECAS[fase];
+    posicoesDasPecas(total).forEach(([x, y], i) => {
+      const el = document.createElement("div");
+      el.className = "peca";
+      el.textContent = FASES[fase].peca;
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      el.style.animationDelay = `${i * 0.08}s, ${(i % 3) * 0.2}s`;
+      el.addEventListener("pointerdown", (evento) => pegarPeca(evento, el));
+      raiz.appendChild(el);
+    });
+    estado = "construindo";
+    voz.falar(FASES[fase].pedir);
+  }
+
+  // As peças ficam espalhadas no meio da tela, longe do lobo e da casa
+  function posicoesDasPecas(n) {
+    const W = raiz.clientWidth;
+    const H = raiz.clientHeight;
+    const emPe = H > W;
+    const [x0, x1, y0, y1] = emPe ? [0.1, 0.9, 0.12, 0.44] : [0.28, 0.6, 0.14, 0.64];
+    const colunas = n <= 3 ? n : Math.ceil(n / 2);
+    const linhas = n <= 3 ? 1 : 2;
+    const cw = ((x1 - x0) * W) / colunas;
+    const ch = ((y1 - y0) * H) / linhas;
+    const lista = [];
+    for (let i = 0; i < n; i++) {
+      const c = i % colunas;
+      const l = Math.floor(i / colunas);
+      // Na linha de baixo com menos peças, elas ficam centralizadas
+      const naLinha = l === linhas - 1 ? n - colunas * (linhas - 1) : colunas;
+      const sobra = ((colunas - naLinha) * cw) / 2;
+      lista.push([
+        x0 * W + sobra + (c + 0.5) * cw + (Math.random() - 0.5) * cw * 0.25,
+        y0 * H + (l + 0.5) * ch + (Math.random() - 0.5) * ch * 0.25,
+      ]);
+    }
+    return lista;
+  }
+
+  function pegarPeca(evento, el) {
+    evento.preventDefault();
+    sons.acordar();
+    if (estado !== "construindo" || el.classList.contains("voando")) return;
+    obra++;
+    const total = PECAS[fase];
+
+    // A peça voa até a parte da casa que está sendo construída
+    const p = caixa(el);
+    const c = caixa(desenho);
+    const alvoX = c.x + c.w * (0.25 + Math.random() * 0.5);
+    const alvoY = c.y + c.h * (1 - (obra - 0.5) / total);
+    el.classList.add("voando");
+    el.style.transform = `translate(${alvoX - (p.x + p.w / 2)}px, ${alvoY - (p.y + p.h / 2)}px) scale(0.4)`;
+    el.style.opacity = "0";
+    depois(() => el.remove(), 600);
+    depois(() => {
+      desenho.style.setProperty("--obra", obra / total);
+      sons.inflar(obra / total);
+    }, 450);
+
+    voz.falar(`${NUMEROS[obra]}!`);
+    if (obra === total) {
+      estado = "ocupado";
+      depois(casaPronta, 900);
+    }
+  }
+
+  // Casa pronta: os porquinhos entram e aparecem na janela; aí vem o lobo
+  function casaPronta() {
+    casa.classList.add("pronta");
+    porcos.classList.add("entrando");
+    depois(() => janela.classList.add("com-porcos"), 600);
+    voz.falar(`A casa de ${FASES[fase].nome} ficou pronta! Os porquinhos entraram.`, () =>
+      depois(chamarLobo, 300)
+    );
+  }
+
+  function chamarLobo() {
+    sopros = 0;
+    folego.innerHTML =
+      fase === 0 ? "" : Array.from({ length: SOPROS[fase] }, () => `<span class="gomo">💨</span>`).join("");
+    contador.textContent = "";
+    corpo.style.setProperty("--inflar", 0);
+    lobo.className = "lobo";
+    estado = "soprando";
+    raiz.classList.add("pode-soprar");
+    voz.falar("Olha o lobo! Toca no lobo para ele soprar!");
+  }
+
+  // ---------- O lobo sopra ----------
   // Linhas de vento saindo da boca do lobo até a casa
   function soprarVento(linhas, forca) {
-    const l = caixa(cara);
+    const l = caixa(corpo);
     const c = caixa(desenho);
-    const x0 = l.x + l.w * 0.75;
+    const x0 = l.x + l.w * 0.86;
+    const meio = l.y + l.h * 0.42;
     const x1 = c.x + c.w * (forca > 0.8 ? 0.95 : 0.4);
-    const meio = l.y + l.h * 0.6;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "vento");
     for (let i = 0; i < linhas; i++) {
-      const y = meio + (i - (linhas - 1) / 2) * l.h * 0.22 * (0.6 + forca);
-      const onda = (Math.random() - 0.5) * l.h * 0.5;
+      const y = meio + (i - (linhas - 1) / 2) * c.h * 0.12 * (0.6 + forca);
+      const onda = (Math.random() - 0.5) * l.h * 0.3;
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", `M${x0} ${meio} Q${(x0 + x1) / 2} ${y + onda} ${x1} ${y}`);
+      path.setAttribute("d", `M${x0} ${meio} Q${(x0 + x1) / 2} ${y + onda} ${x1} ${y + c.h * 0.2}`);
       path.setAttribute("pathLength", "100");
       path.style.animationDelay = i * 0.07 + "s";
       svg.appendChild(path);
@@ -276,40 +451,14 @@ function iniciarPorquinhos(raiz, aoVencer) {
     sons.vento(forca);
   }
 
-  function montarFase(n) {
-    fase = n;
-    sopros = 0;
-    desenho.innerHTML = CASAS[n];
-    desenho.className = "desenho-casa";
-    casa.className = `casa casa-${NOMES_DAS_FASES[n]}`;
-    trocarClasse(casa, "chegando");
-    // Um porquinho a mais em cada casa: os que fugiram se juntam ao irmão
-    porcos.innerHTML = Array.from({ length: n + 1 }, () => `<span class="porco"><span>🐖</span></span>`).join("");
-    folego.innerHTML =
-      n === 0 ? "" : Array.from({ length: SOPROS[n] }, () => `<span class="gomo">💨</span>`).join("");
-    contador.textContent = "";
-    lobo.className = "lobo";
-    lobo.style.transform = "";
-    cara.style.setProperty("--inflar", 0);
-
-    const falas = [
-      "O lobo quer derrubar a casa de palha! Toca no lobo para ele soprar!",
-      "Agora a casa de madeira! Toca no lobo cinco vezes!",
-      "E agora a casa de tijolo! Toca no lobo para soprar!",
-    ];
-    estado = "soprando";
-    raiz.classList.add("pode-soprar");
-    voz.falar(falas[n]);
-  }
-
   // Toque no lobo: enche a bochecha; no último toque, sopra com força
   function tocarNoLobo(evento) {
     evento.preventDefault();
     if (estado !== "soprando") return;
     sopros++;
     const meta = SOPROS[fase];
-    cara.style.setProperty("--inflar", sopros / meta);
-    trocarClasse(cara, "enchendo");
+    corpo.style.setProperty("--inflar", sopros / meta);
+    trocarClasse(corpo, "enchendo");
     contador.textContent = sopros;
     trocarClasse(contador, "pulou");
     const gomo = folego.children[sopros - 1];
@@ -332,7 +481,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
 
   function soprarForte() {
     trocarClasse(lobo, "soprando");
-    cara.style.setProperty("--inflar", 0);
+    corpo.style.setProperty("--inflar", 0);
     soprarVento(7, 1);
     if (fase === 0) depois(derrubarPalha, 450);
     if (fase === 1) depois(derrubarMadeira, 450);
@@ -342,6 +491,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
   // Palha: a casinha se desfaz e os fios voam pela tela
   function derrubarPalha() {
     const c = caixa(desenho);
+    janela.classList.remove("com-porcos");
     desenho.classList.add("voando");
     for (let i = 0; i < 40; i++) {
       soltarPedaco("🌾", "palha", c.x + Math.random() * c.w, c.y + c.h * (0.1 + Math.random() * 0.85), {
@@ -353,8 +503,8 @@ function iniciarPorquinhos(raiz, aoVencer) {
       });
     }
     depois(
-      () => porquinhosFogem("Socorro! A casa de palha voou! O porquinho fugiu para a casa de madeira!", 1),
-      700
+      () => porquinhosFogem("Socorro! A casa de palha voou! Os porquinhos fugiram!", 1),
+      500
     );
   }
 
@@ -378,23 +528,27 @@ function iniciarPorquinhos(raiz, aoVencer) {
 
   function derrubarMadeira() {
     const c = caixa(desenho);
+    janela.classList.remove("com-porcos");
     desenho.classList.add("desabando");
     for (let i = 0; i < 22; i++) soltarTabua(c, true);
     depois(
-      () => porquinhosFogem("Socorro! A casa de madeira caiu! Os porquinhos fugiram para a casa de tijolo!", 2),
-      800
+      () => porquinhosFogem("Socorro! A casa de madeira caiu! Os porquinhos fugiram de novo!", 2),
+      600
     );
   }
 
-  // Os porquinhos saem correndo para a direita e vem a próxima casa
+  // Os porquinhos saem pela porta correndo para a direita e vem a próxima casa
   function porquinhosFogem(fala, proxima) {
-    [...porcos.children].forEach((p, i) => {
-      p.style.animationDelay = i * 0.15 + "s";
-      p.classList.add("fugindo");
-    });
+    porcos.classList.remove("entrando");
+    porcos.classList.add("fugindo");
     let falou = false;
     let correu = false;
-    const seguir = () => falou && correu && montarFase(proxima);
+    const seguir = () => {
+      if (!falou || !correu) return;
+      colocarCasa(proxima);
+      trocarClasse(casa, "chegando");
+      depois(comecarObra, 900);
+    };
     voz.falar(fala, () => {
       falou = true;
       seguir();
@@ -405,7 +559,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     }, 1800);
   }
 
-  // Tijolo: sopra com tudo e a casa nem treme. Blonk! O lobo senta cansado.
+  // ---------- Tijolo: o lobo não consegue ----------
   function naoCaiu() {
     sons.blonk();
     depois(() => lobo.classList.add("cansado"), 300);
@@ -414,8 +568,24 @@ function iniciarPorquinhos(raiz, aoVencer) {
     );
   }
 
+  // Lá dentro os porquinhos acendem o fogo: a chaminé solta fumaça sem parar
+  function fumegar() {
+    if (!fumegando) return;
+    const ch = caixa(desenho.querySelector(".chamine"));
+    soltarPedaco("", "fumaca", ch.x + ch.w / 2, ch.y, {
+      "--x": 20 + Math.random() * 40 + "px",
+      "--y": -ch.h * 2.5 + "px",
+      "--tempo": "2.4s",
+      width: ch.w * 1.1 + "px",
+      height: ch.w * 1.1 + "px",
+    }, 2600);
+    depois(fumegar, 300);
+  }
+
   function mostrarEscada() {
     escada.classList.add("aparece");
+    fumegando = true;
+    fumegar();
     estado = "escada";
     voz.falar("Olha uma escada! Toca na escada!");
   }
@@ -427,7 +597,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     estado = "ocupado";
     escada.classList.remove("aparece");
     escada.classList.add("usada");
-    lobo.classList.remove("cansado", "soprando");
+    lobo.classList.remove("cansado", "soprando", "esperando");
     lobo.classList.add("andando");
 
     // Conta pelo pé do lobo (meio de baixo), que é de onde ele cresce e encolhe
@@ -436,8 +606,8 @@ function iniciarPorquinhos(raiz, aoVencer) {
     const e = caixa(escada);
     const ch = caixa(desenho.querySelector(".chamine"));
 
-    // 1: anda até a escada
-    lobo.style.transform = `translate(${e.x + e.w / 2 - pe.x}px, ${e.y + e.h - pe.y}px) scale(0.75)`;
+    // 1: anda até o pé da escada
+    lobo.style.transform = `translate(${e.x + e.w / 2 - pe.x}px, ${e.y + e.h - pe.y}px) scale(0.7)`;
     voz.falar("O lobo subiu no telhado!");
 
     // 2: sobe até o lado da chaminé
@@ -449,38 +619,71 @@ function iniciarPorquinhos(raiz, aoVencer) {
     depois(() => {
       lobo.classList.add("entrando");
       lobo.style.transform = `translate(${ch.x + ch.w / 2 - pe.x}px, ${ch.y + ch.h * 0.7 - pe.y}px) scale(0.1)`;
-      voz.falar("E entrou pela chaminé!", () => depois(viraramAmigos, 400));
+      voz.falar("E entrou pela chaminé! Tá quente!", () => depois(sairVoando, 200));
     }, 2400);
   }
 
-  // Dentro de casa os porquinhos dão bolo para o lobo, e todo mundo vira amigo
-  function viraramAmigos() {
-    const c = caixa(desenho);
+  // A chaminé está quente! O lobo sai voando para longe, soltando fumaça
+  function sairVoando() {
+    const ch = caixa(desenho.querySelector(".chamine"));
     const pe = peDoLobo;
-    // Pula direto para a porta (sem andar até lá) e aparece devagarinho
-    lobo.style.transition = "none";
-    lobo.style.transform = `translate(${c.x + c.w * 0.3 - pe.x}px, ${c.y + c.h - pe.y}px) scale(0.6)`;
-    void lobo.offsetWidth; // aplica a posição nova antes de ligar a transição de novo
-    lobo.style.transition = "";
-    lobo.classList.remove("andando", "entrando");
-    lobo.classList.add("amigo");
-    escada.classList.remove("usada"); // a escada some: agora ele entra pela porta
+    lobo.classList.add("sem-transicao");
+    lobo.classList.remove("entrando", "andando");
+    lobo.style.transform = `translate(${ch.x + ch.w / 2 - pe.x}px, ${ch.y - pe.y}px) scale(0.5)`;
+    void lobo.offsetWidth;
+    lobo.classList.add("voando");
+    // Sobe bem alto, atravessa o céu girando e some lá longe (dá para ver o voo todo)
+    const W = raiz.clientWidth;
+    const H = raiz.clientHeight;
+    const ponto = (x, y, giro, tamanho) =>
+      `translate(${x - pe.x}px, ${y - pe.y}px) rotate(${giro}deg) scale(${tamanho})`;
+    const voo = lobo.animate(
+      [
+        { transform: ponto(ch.x + ch.w / 2, ch.y, 0, 0.5) },
+        { transform: ponto(ch.x - W * 0.1, H * 0.2, -360, 0.55), offset: 0.3 },
+        { transform: ponto(W * 0.35, H * 0.12, -720, 0.45), offset: 0.65 },
+        { transform: ponto(-200, -150, -1080, 0.25) },
+      ],
+      { duration: 2600, easing: "ease-in-out", fill: "forwards" }
+    );
+    voo.onfinish = () => lobo.classList.add("sumiu");
+    voz.falar("Ahhhhhhh!");
+    sons.vento(1);
 
-    const bolo = document.createElement("span");
-    bolo.className = "bolo";
-    bolo.textContent = "🍰";
-    porcos.prepend(bolo);
+    // Rastro de fumaça atrás dele
+    const inicio = performance.now();
+    const rastro = () => {
+      if (performance.now() - inicio > 2600) return;
+      const l = caixa(corpo);
+      soltarPedaco("", "fumaca rastro", l.x + l.w / 2, l.y + l.h * 0.7, {
+        "--x": "0px",
+        "--y": "-20px",
+        "--tempo": "1.2s",
+        width: Math.max(l.w * 0.6, 14) + "px",
+        height: Math.max(l.w * 0.6, 14) + "px",
+      }, 1300);
+      depois(rastro, 60);
+    };
+    rastro();
+    depois(felizesParaSempre, 2700);
+  }
 
-    voz.falar("Os porquinhos deram bolo para o lobo! Agora todo mundo é amigo!", () => depois(vitoria, 300));
+  // Os porquinhos saem de casa pulando de alegria
+  function felizesParaSempre() {
+    lobo.classList.add("sumiu");
+    janela.classList.remove("com-porcos");
+    porcos.classList.remove("entrando");
+    porcos.classList.add("felizes");
+    escada.classList.remove("usada");
+    voz.falar("Os porquinhos conseguiram! Aêêê! E eles viveram felizes para sempre!", () => depois(vitoria, 200));
+    chuvaDeConfete();
+    sons.musica();
   }
 
   function vitoria() {
     estado = "fim";
-    sons.musica();
     chuvaDeConfete();
-    depois(chuvaDeConfete, 1500);
     aoVencer();
-    voz.falar("Parabéns! Você ajudou o lobo!");
   }
 
   function chuvaDeConfete() {
@@ -505,10 +708,11 @@ function iniciarPorquinhos(raiz, aoVencer) {
   escada.addEventListener("pointerdown", tocarNaEscada);
   document.body.classList.add("luvinha"); // o mouse vira a luvinha, igual nos outros jogos
 
-  montarFase(0);
+  comecar();
 
   // Limpeza: para voz, sons e timers e devolve o DOM ao estado inicial
   return () => {
+    fumegando = false;
     voz.parar();
     sons.fechar();
     timers.forEach(clearTimeout);
@@ -516,17 +720,19 @@ function iniciarPorquinhos(raiz, aoVencer) {
     lobo.removeEventListener("pointerdown", tocarNoLobo);
     escada.removeEventListener("pointerdown", tocarNaEscada);
     document.body.classList.remove("luvinha");
-    raiz.querySelectorAll(".pedaco, .vento").forEach((el) => el.remove());
+    raiz.querySelectorAll(".pedaco, .vento, .peca").forEach((el) => el.remove());
     raiz.className = "porquinhos";
     lobo.className = "lobo";
     lobo.style.transform = "";
-    lobo.style.transition = "";
-    cara.className = "cara";
-    cara.style.removeProperty("--inflar");
+    corpo.className = "corpo-lobo";
+    corpo.style.removeProperty("--inflar");
     casa.className = "casa";
+    fantasma.innerHTML = "";
     desenho.className = "desenho-casa";
     desenho.innerHTML = "";
-    porcos.innerHTML = "";
+    janela.className = "janela";
+    janela.innerHTML = "";
+    porcos.className = "porcos";
     escada.className = "escada";
     folego.innerHTML = "";
     contador.textContent = "";
