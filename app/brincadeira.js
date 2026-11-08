@@ -2,6 +2,21 @@ import { sortearBicho } from "./bichos";
 import { vozBrasileira } from "./voz";
 import { pararSom, tocarSom } from "./sons";
 
+// A série de bichos continua de uma palavra para a outra (e de um nome para o outro):
+// vem 1 gato; se ela pega, vêm 2 gatos; depois 4; depois 8; e aí recomeça com outro bicho.
+const MAXIMO_DO_BANDO = 8;
+const serie = { tipo: null, quantos: 1 };
+
+// "dois gatos", "duas vacas": o número muda com o bicho
+function numero(n, tipo) {
+  const ela = tipo.pronome === "ela";
+  const nomes = [
+    "zero", ela ? "uma" : "um", ela ? "duas" : "dois", "três", "quatro",
+    "cinco", "seis", "sete", "oito",
+  ];
+  return nomes[n] || String(n);
+}
+
 // Toda a brincadeira roda direto no DOM (animações quadro a quadro e voz).
 // Devolve uma função de limpeza que para tudo e deixa a tela como no começo.
 export function iniciarBrincadeira(lista, opcoes = {}) {
@@ -61,14 +76,14 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     fala.lang = "pt-BR";
     const voz = vozBrasileira();
     if (voz) fala.voice = voz;
-    fala.rate = 0.85; // um pouco mais devagar, para a criança acompanhar
+    fala.rate = 1.05; // ela já conhece as letras: a voz pode ir mais ligeira
     fala.pitch = 1.2; // tom um pouco mais alto, mais alegre
     fala.onend = terminar;
     fala.onerror = terminar;
     speechSynthesis.speak(fala);
 
     // Segurança: se o aparelho não tiver voz, libera depois de um tempo
-    depois(terminar, 2000 + texto.length * 150);
+    depois(terminar, 2000 + texto.length * 120);
   }
 
   // Primeiro o bicho faz o som dele, depois a voz fala a frase
@@ -203,9 +218,9 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
   }
 
   // ---------- Os bichinhos que pegam as letras ----------
-  const VELOCIDADE_CHEGADA = 160; // pixels por segundo
+  const VELOCIDADE_CHEGADA = 220; // pixels por segundo
   const ESPACO_DA_CARGA = 80; // espaço em cima do bicho para as letras
-  let bicho = null; // só um bicho na tela por vez
+  let bando = null; // um bando por vez: 1, 2, 4 ou 8 bichos iguais
 
   // Uma palavra por vez, na ordem: Rhayan, depois Fatima, depois Julia
   function palavraAtual() {
@@ -225,7 +240,7 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       item.classList.toggle("esperando", Boolean(futura));
     });
 
-    if (!atual || bicho || falando) return;
+    if (!atual || bando || falando) return;
     const letra = atual.letras[atual.quantas];
     letra.classList.add("proxima");
     const seta = document.createElement("span");
@@ -234,12 +249,21 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     letra.appendChild(seta);
   }
 
-  // O que a voz fala enquanto o bicho foge, para lembrar de pegar ele
+  // Como a voz chama o bando: "o gato", "dois gatos", "duas vacas"...
+  function quemVeio(tipo, n) {
+    return n === 1 ? tipo.nome : `${numero(n, tipo)} ${tipo.muitos}`;
+  }
+  // "ele"/"ela" para um bicho, "eles"/"elas" para vários
+  function eles(tipo, n) {
+    return n === 1 ? tipo.pronome : tipo.pronome + "s";
+  }
+
+  // O que a voz fala enquanto o bando foge, para lembrar de pegar
   const lembretes = [
-    (t) => `Corre! ${t.nome} está fugindo! Pega ${t.pronome}!`,
-    (t) => `Toca ${t.no} para pegar ${t.pronome}!`,
-    (t) => `Olha ${t.nome} correndo! Pega ${t.pronome}!`,
-    (t) => `Quase! Pega ${t.pronome}!`,
+    (t, n) => `Corre! ${quemVeio(t, n)} ${n === 1 ? "está" : "estão"} fugindo! Pega!`,
+    (t, n) => (n === 1 ? `Toca ${t.no} para pegar ${t.pronome}!` : `Toca nos ${t.muitos} para pegar!`),
+    (t, n) => `Olha ${n === 1 ? t.nome : `os ${t.muitos}`} correndo! Pega!`,
+    () => `Quase! Pega!`,
   ];
 
   function nomeLetra(l) {
@@ -250,100 +274,163 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     return `${texto.length > 1 ? "as letras" : "a letra"} ${soletrar(texto)}`;
   }
 
-  // Depois de pegar o bicho, diz qual é a próxima letra para tocar
+  // Depois de pegar o bando, diz qual é a próxima letra para tocar
   function pedirProximaLetra(novoNome) {
     const atual = palavraAtual();
     if (!atual || modoFesta) return;
     const letra = nomeLetra(atual.palavra[atual.quantas]);
-    falar(novoNome ? `Agora o próximo nome! Toca na letra ${letra}!` : `Agora toca na letra ${letra}!`);
+    // Se o próximo bando vai ser maior, conta antes, para ela ficar animada
+    const vem = serie.quantos > 1 ? ` Vão vir ${quemVeio(serie.tipo, serie.quantos)}!` : "";
+    falar(
+      novoNome
+        ? `Agora o próximo nome!${vem} Toca na letra ${letra}!`
+        : `${vem} Toca na letra ${letra}!`
+    );
   }
 
   function soletrar(texto) {
     return [...texto].map((l) => nomeDaLetra[l] || l).join(", ");
   }
 
-  function chamarBicho(item) {
+  // Quanto mais bichos, menores eles ficam (mas nunca pequenos demais para o dedinho)
+  const ENCOLHER = { 1: 1, 2: 0.8, 4: 0.65, 8: 0.5 };
+
+  function chamarBando(item) {
     const passo = item.quantas;
-    const tipo = sortearBicho();
+    // Quando a série recomeça, sorteia um bicho novo; senão vem o dobro do mesmo
+    if (!serie.tipo) serie.tipo = sortearBicho();
+    const tipo = serie.tipo;
+    const quantos = serie.quantos;
     const pedaco = item.palavra.slice(0, passo + 1);
-
-    const el = document.createElement("div");
-    el.className = "bicho";
-    el.style.fontSize = tipo.tamanho + "rem";
-    el.style.setProperty("--cor", getComputedStyle(item).getPropertyValue("--cor"));
-    el.innerHTML = `<div class="carga"></div><div class="corpo"><span class="passo">${tipo.emoji}</span></div>`;
-    el.querySelector(".carga").textContent = pedaco;
-    document.body.appendChild(el);
-
-    const tam = el.getBoundingClientRect();
-    // Vai até a letra que ele vai pegar
     const letra = item.letras[passo].getBoundingClientRect();
-    const daEsquerda = Math.random() < 0.5;
+    const tamanho = quantos === 1 ? tipo.tamanho : Math.max(4, tipo.tamanho * ENCOLHER[quantos]);
 
-    bicho = {
-      el, item, tipo, pedaco,
-      w: tam.width,
-      h: tam.height,
-      x: daEsquerda ? -tam.width : window.innerWidth,
-      y: letra.top + letra.height / 2 - tam.height / 2,
-      vx: daEsquerda ? 1 : -1,
-      vy: 0,
-      alvo: {
-        x: letra.left + letra.width / 2 - tam.width / 2,
-        y: letra.top + letra.height / 2 - tam.height / 2,
-      },
-      velocidade: 70 + passo * 10,
-      tempoParaVirar: 0,
-      estado: "chegando",
-      ultimo: performance.now(),
+    bando = {
+      item, tipo, pedaco, quantos,
+      membros: [],
+      pegos: 0,
       falouChegada: false,
       tempoLembrete: 6,
+      ultimo: performance.now(),
     };
 
-    // Conta o que vai acontecer; o bicho só pega a letra quando a voz terminar
-    const b = bicho;
-    falar(`Olha! Lá vem ${tipo.nome}! ${tipo.pronome} vai pegar a letra ${nomeLetra(item.palavra[passo])}!`, () => {
-      b.falouChegada = true;
-      if (bicho === b && b.estado === "esperando") bichoPegaAsLetras();
-    });
+    for (let i = 0; i < quantos; i++) {
+      const el = document.createElement("div");
+      el.className = quantos > 1 ? "bicho do-bando" : "bicho";
+      el.style.fontSize = tamanho + "rem";
+      el.style.setProperty("--cor", getComputedStyle(item).getPropertyValue("--cor"));
+      el.innerHTML = `<div class="carga"></div><div class="corpo"><span class="passo">${tipo.emoji}</span></div>`;
+      el.querySelector(".carga").textContent = pedaco;
+      document.body.appendChild(el);
 
-    el.addEventListener("pointerdown", pegarBicho);
-    atualizarDicas(); // tira a mãozinha enquanto o bicho está na tela
-    proximoQuadro(moverBicho);
+      const tam = el.getBoundingClientRect();
+      // Os bichos do bando ficam em roda em volta da letra, sem um tampar o outro
+      const angulo = (i / quantos) * Math.PI * 2;
+      const raio = quantos === 1 ? 0 : tam.width * (quantos > 4 ? 1.1 : 0.7);
+      const alvoX = letra.left + letra.width / 2 - tam.width / 2 + Math.cos(angulo) * raio;
+      const alvoY = letra.top + letra.height / 2 - tam.height / 2 + Math.sin(angulo) * raio;
+      const daEsquerda = Math.random() < 0.5;
+
+      const b = {
+        el,
+        w: tam.width,
+        h: tam.height,
+        x: daEsquerda ? -tam.width : window.innerWidth,
+        y: alvoY,
+        vx: daEsquerda ? 1 : -1,
+        vy: 0,
+        alvo: {
+          x: Math.min(Math.max(alvoX, 0), window.innerWidth - tam.width),
+          y: Math.min(Math.max(alvoY, ESPACO_DA_CARGA), window.innerHeight - tam.height),
+        },
+        velocidade: 90 + passo * 12 + Math.random() * 30,
+        tempoParaVirar: 0,
+        estado: "chegando",
+      };
+      el.addEventListener("pointerdown", (evento) => pegarBicho(evento, b));
+      bando.membros.push(b);
+    }
+
+    // Conta o que vai acontecer; o bando só pega a letra quando a voz terminar
+    const meu = bando;
+    const vem = quantos === 1 ? "vem" : "vêm";
+    falar(
+      `Olha! Lá ${vem} ${quemVeio(tipo, quantos)}! ${eles(tipo, quantos)} ${quantos === 1 ? "vai" : "vão"} pegar a letra ${nomeLetra(item.palavra[passo])}!`,
+      () => {
+        meu.falouChegada = true;
+        if (bando === meu) talvezPegarAsLetras();
+      }
+    );
+
+    atualizarDicas(); // tira a mãozinha enquanto o bando está na tela
+    proximoQuadro(moverBando);
   }
 
-  // O bicho chegou na palavra: pega as letras e sai correndo
-  function bichoPegaAsLetras() {
-    const b = bicho;
-    b.estado = "pegando";
-    b.el.classList.add("carregando");
-    b.item.letras.forEach((l, i) => {
-      if (i < b.pedaco.length) l.classList.add("levada");
+  // Quando todos chegaram e a voz terminou, o bando pega as letras e sai correndo
+  function talvezPegarAsLetras() {
+    const meu = bando;
+    if (!meu.falouChegada || !meu.membros.every((b) => b.estado === "esperando")) return;
+    meu.membros.forEach((b) => {
+      b.estado = "pegando";
+      b.el.classList.add("carregando");
     });
-    falar(`Ih! ${b.tipo.nome} pegou ${aLetra(b.pedaco)}!`, () => {
-      if (bicho !== b || b.estado !== "fugindo") return;
-      falar(`Olha, ${b.tipo.pronome} está fugindo! Corre, pega ${b.tipo.pronome}!`);
+    meu.item.letras.forEach((l, i) => {
+      if (i < meu.pedaco.length) l.classList.add("levada");
+    });
+    const n = meu.quantos;
+    falar(`Ih! ${quemVeio(meu.tipo, n)} ${n === 1 ? "pegou" : "pegaram"} ${aLetra(meu.pedaco)}!`, () => {
+      if (bando !== meu || meu.pegos > 0) return;
+      falar(`Corre, pega ${n === 1 ? meu.tipo.pronome : "todos"}!`);
     });
 
     depois(() => {
-      if (bicho !== b || b.estado !== "pegando") return;
-      b.estado = "fugindo";
-    }, 700);
+      if (bando !== meu) return;
+      meu.membros.forEach((b) => {
+        if (b.estado === "pegando") b.estado = "fugindo";
+      });
+    }, 500);
   }
 
   function novaDirecao(b) {
     const angulo = Math.random() * Math.PI * 2;
     b.vx = Math.cos(angulo) * b.velocidade;
     b.vy = Math.sin(angulo) * b.velocidade;
-    b.tempoParaVirar = 2 + Math.random() * 2;
+    b.tempoParaVirar = 1.5 + Math.random() * 2;
   }
 
-  function moverBicho(agora) {
-    const b = bicho;
-    if (!b) return;
-    const s = Math.min((agora - b.ultimo) / 1000, 0.05);
-    b.ultimo = agora;
+  function moverBando(agora) {
+    const meu = bando;
+    if (!meu) return;
+    const s = Math.min((agora - meu.ultimo) / 1000, 0.05);
+    meu.ultimo = agora;
 
+    // Se ela demorar para pegar, a voz lembra de tempos em tempos
+    if (meu.membros.some((b) => b.estado === "fugindo")) {
+      if (!falando) meu.tempoLembrete -= s;
+      if (meu.tempoLembrete <= 0) {
+        meu.tempoLembrete = 7;
+        const soltos = meu.membros.filter((b) => b.estado === "fugindo").length;
+        falar(lembretes[Math.floor(Math.random() * lembretes.length)](meu.tipo, soltos));
+      }
+    }
+
+    meu.membros.forEach((b) => moverBicho(b, s));
+
+    // Os que já saíram da tela vão embora de vez
+    meu.membros = meu.membros.filter((b) => {
+      if (b.estado !== "foi") return true;
+      b.el.remove();
+      return false;
+    });
+    if (meu.membros.length === 0) {
+      bando = null;
+      atualizarDicas();
+      return;
+    }
+    proximoQuadro(moverBando);
+  }
+
+  function moverBicho(b, s) {
     if (b.estado === "chegando") {
       const dx = b.alvo.x - b.x;
       const dy = b.alvo.y - b.y;
@@ -352,9 +439,9 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       if (d <= andar) {
         b.x = b.alvo.x;
         b.y = b.alvo.y;
-        // Espera a voz terminar de contar antes de pegar a letra
-        if (b.falouChegada) bichoPegaAsLetras();
-        else b.estado = "esperando";
+        // Espera a voz terminar de contar (e os outros chegarem) antes de pegar a letra
+        b.estado = "esperando";
+        talvezPegarAsLetras();
       } else {
         b.vx = (dx / d) * VELOCIDADE_CHEGADA;
         b.vy = (dy / d) * VELOCIDADE_CHEGADA;
@@ -364,12 +451,6 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     } else if (b.estado === "fugindo") {
       b.tempoParaVirar -= s;
       if (b.tempoParaVirar <= 0) novaDirecao(b);
-      // Se ela demorar para pegar, a voz lembra de tempos em tempos
-      if (!falando) b.tempoLembrete -= s;
-      if (b.tempoLembrete <= 0) {
-        b.tempoLembrete = 7;
-        falar(lembretes[Math.floor(Math.random() * lembretes.length)](b.tipo));
-      }
       b.x += b.vx * s;
       b.y += b.vy * s;
       // Bate nas bordas da tela e volta
@@ -381,45 +462,58 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       if (b.y > maxY) { b.y = maxY; b.vy = -Math.abs(b.vy); }
     } else if (b.estado === "indo") {
       b.x += b.vx * s;
-      if (b.x < -b.w - 50 || b.x > window.innerWidth + 50) {
-        b.el.remove();
-        bicho = null;
-        atualizarDicas();
-        return;
-      }
+      if (b.x < -b.w - 50 || b.x > window.innerWidth + 50) b.estado = "foi";
     }
 
     if (b.vx > 0) b.el.classList.add("direita");
     else if (b.vx < 0) b.el.classList.remove("direita");
     b.el.style.transform = `translate(${b.x}px, ${b.y}px)`;
-    proximoQuadro(moverBicho);
   }
 
-  // Ela pegou o bicho! As letras voltam para o nome
-  function pegarBicho(evento) {
+  // Ela pegou um bicho! Ele sai correndo feliz.
+  // Quando pega o último do bando, as letras voltam para o nome.
+  function pegarBicho(evento, b) {
     evento.preventDefault();
     evento.stopPropagation();
-    const b = bicho;
+    const meu = bando;
     // Só dá para pegar depois que ele pegou a letra
-    if (!b || ["indo", "chegando", "esperando"].includes(b.estado)) return;
+    if (!meu || !["pegando", "fugindo"].includes(b.estado)) return;
 
-    const item = b.item;
     const caixa = b.el.getBoundingClientRect();
-    explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⭐", "✨", "🌟", "🎉"], 25, 180);
+    explosao(caixa.left + caixa.width / 2, caixa.top + caixa.height / 2, ["⭐", "✨", "🌟", "🎉"], meu.quantos > 2 ? 12 : 25, 180);
 
     b.estado = "indo";
     b.el.classList.remove("carregando");
     b.el.classList.add("feliz");
     b.vx = b.x + b.w / 2 < window.innerWidth / 2 ? -350 : 350;
+    meu.pegos++;
+    meu.tempoLembrete = 6;
 
-    item.quantas = b.pedaco.length;
+    // Ainda tem bicho solto: a voz vai contando "um, dois, três..."
+    if (meu.pegos < meu.quantos) {
+      falar(`${numero(meu.pegos, meu.tipo)}!`);
+      return;
+    }
+
+    // Pegou todos! Na próxima vem o dobro (até 8; depois recomeça com outro bicho)
+    if (serie.quantos < MAXIMO_DO_BANDO) {
+      serie.quantos *= 2;
+    } else {
+      serie.quantos = 1;
+      serie.tipo = null;
+    }
+
+    const item = meu.item;
+    item.quantas = meu.pedaco.length;
     item.letras.forEach((l, i) => {
       l.classList.remove("levada");
       l.classList.toggle("acesa", i < item.quantas);
     });
 
-    const soletrado = soletrar(b.pedaco);
-    const aee = `Aee! Pegou ${b.tipo.nome}!`;
+    const n = meu.quantos;
+    const soletrado = soletrar(meu.pedaco);
+    const aee = n === 1 ? `Aee! Pegou ${meu.tipo.nome}!` : `Aee! Pegou ${n === 2 ? "os dois" : "todos"}!`;
+    const devolveu = `${eles(meu.tipo, n)} ${n === 1 ? "devolveu" : "devolveram"}`;
     if (item.quantas === item.letras.length) {
       item.classList.add("completo");
       festaDoNome(item);
@@ -428,16 +522,16 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
       // assim que a voz terminar de falar este nome
       const todosCompletos = itens.every((i) => i.classList.contains("completo"));
       somEFala(
-        b.tipo,
-        `${aee} ${b.tipo.pronome} devolveu ${oQue}! ${soletrado}... ${item.dataset.falar}`,
+        meu.tipo,
+        `${aee} ${devolveu} ${oQue}! ${soletrado}... ${item.dataset.falar}`,
         todosCompletos
           ? opcoes.aoTerminar ? festaDaPalavra : comecarFestaDaFamilia
           : () => pedirProximaLetra(true)
       );
     } else {
       somEFala(
-        b.tipo,
-        `${aee} ${b.tipo.pronome} devolveu ${aLetra(b.pedaco)}! Tchau, ${b.tipo.so}!`,
+        meu.tipo,
+        `${aee} ${devolveu} ${aLetra(meu.pedaco)}! Tchau!`,
         () => pedirProximaLetra(false)
       );
     }
@@ -463,14 +557,14 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
         return;
       }
 
-      // Um bicho por vez, e espera a voz terminar
-      if (bicho || falando) return;
+      // Um bando por vez, e espera a voz terminar
+      if (bando || falando) return;
 
       // Só a palavra da vez responde ao toque
       if (item !== palavraAtual()) return;
 
-      // Vem um bichinho pegar a próxima letra!
-      chamarBicho(item);
+      // Vem o bando pegar a próxima letra!
+      chamarBando(item);
     };
 
     item.addEventListener("click", aoClicar);
@@ -490,8 +584,8 @@ export function iniciarBrincadeira(lista, opcoes = {}) {
     clearInterval(intervaloDosFogos);
     timers.forEach(clearTimeout);
     quadros.forEach(cancelAnimationFrame);
-    if (bicho) bicho.el.remove();
-    bicho = null;
+    if (bando) bando.membros.forEach((b) => b.el.remove());
+    bando = null;
     document.querySelectorAll(".festa").forEach((el) => el.remove());
     lista.querySelectorAll(".seta").forEach((s) => s.remove());
     itens.forEach((item, n) => {

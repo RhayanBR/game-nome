@@ -162,6 +162,13 @@ li.esperando {
   transition: transform 0.3s cubic-bezier(0.3, 1.8, 0.5, 1);
 }
 
+/* Quando vem um bando, as letras em cima de cada bicho ficam menores */
+.bicho.do-bando .carga {
+  font-size: 1.4rem;
+  border-width: 3px;
+  padding: 0 0.4rem;
+}
+
 .bicho.carregando .carga {
   transform: translateX(-50%) scale(1);
 }
