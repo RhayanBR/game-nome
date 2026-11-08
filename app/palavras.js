@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { iniciarBrincadeira } from "./brincadeira";
 
 const PALAVRAS = [
-  { palavra: "BICICLETA", desenho: "🚲", comArtigo: "a bicicleta", falar: "Bicicleta!", cor: "#1e88e5", festa: "🚲 ⭐ 🎉 ✨" },
-  { palavra: "SKATE", desenho: "🛹", comArtigo: "o esqueite", falar: "Esqueite!", cor: "#f4511e", festa: "🛹 ⭐ 🎉 ✨" },
-  { palavra: "PATINETE", desenho: "🛴", comArtigo: "o patinete", falar: "Patinete!", cor: "#00897b", festa: "🛴 ⭐ 🎉 ✨" },
-  { palavra: "CARRO", desenho: "🚗", comArtigo: "o carro", falar: "Carro! Vrum vrum!", cor: "#e53935", festa: "🚗 💨 ⭐ 🎉" },
-  { palavra: "BOLA", desenho: "⚽", comArtigo: "a bola", falar: "Bola!", cor: "#43a047", festa: "⚽ ⭐ 🎉 ✨" },
-  { palavra: "CASA", desenho: "🏠", comArtigo: "a casa", falar: "Casa!", cor: "#6d4c41", festa: "🏠 ❤️ ⭐ 🎉" },
-  { palavra: "BOLO", desenho: "🎂", comArtigo: "o bolo", falar: "Bolo! Hummm!", cor: "#d81b60", festa: "🎂 🍰 🎉 ✨" },
-  { palavra: "SOL", desenho: "☀️", comArtigo: "o sol", falar: "Sol!", cor: "#fb8c00", festa: "☀️ ⭐ 🌟 ✨" },
-  { palavra: "LUA", desenho: "🌙", comArtigo: "a lua", falar: "Lua!", cor: "#3949ab", festa: "🌙 ⭐ 🌟 ✨" },
-  { palavra: "FLOR", desenho: "🌸", comArtigo: "a flor", falar: "Flor!", cor: "#8e24aa", festa: "🌸 🌼 🌷 🦋" },
+  { palavra: "BICICLETA", efeito: "andar", desenho: "🚲", comArtigo: "a bicicleta", falar: "Bicicleta!", cor: "#1e88e5", festa: "🚲 ⭐ 🎉 ✨" },
+  { palavra: "SKATE", efeito: "andar", desenho: "🛹", comArtigo: "o esqueite", falar: "Esqueite!", cor: "#f4511e", festa: "🛹 ⭐ 🎉 ✨" },
+  { palavra: "PATINETE", efeito: "andar", desenho: "🛴", comArtigo: "o patinete", falar: "Patinete!", cor: "#00897b", festa: "🛴 ⭐ 🎉 ✨" },
+  { palavra: "CARRO", efeito: "andar", desenho: "🚗", comArtigo: "o carro", falar: "Carro! Vrum vrum!", cor: "#e53935", festa: "🚗 💨 ⭐ 🎉" },
+  { palavra: "BOLA", efeito: "quicar", desenho: "⚽", comArtigo: "a bola", falar: "Bola!", cor: "#43a047", festa: "⚽ ⭐ 🎉 ✨" },
+  { palavra: "CASA", efeito: "pulsar", desenho: "🏠", comArtigo: "a casa", falar: "Casa!", cor: "#6d4c41", festa: "🏠 ❤️ ⭐ 🎉" },
+  { palavra: "BOLO", efeito: "balancar", desenho: "🎂", comArtigo: "o bolo", falar: "Bolo! Hummm!", cor: "#d81b60", festa: "🎂 🍰 🎉 ✨" },
+  { palavra: "SOL", efeito: "girar", desenho: "☀️", comArtigo: "o sol", falar: "Sol!", cor: "#fb8c00", festa: "☀️ ⭐ 🌟 ✨" },
+  { palavra: "LUA", efeito: "balancar", desenho: "🌙", comArtigo: "a lua", falar: "Lua!", cor: "#3949ab", festa: "🌙 ⭐ 🌟 ✨" },
+  { palavra: "FLOR", efeito: "pulsar", desenho: "🌸", comArtigo: "a flor", falar: "Flor!", cor: "#8e24aa", festa: "🌸 🌼 🌷 🦋" },
 ];
 
 const nomeDaPrimeira = {
@@ -63,7 +63,7 @@ export default function Palavras() {
 
   return (
     <div key={indice} className="jogo-palavras" style={{ "--cor": p.cor }}>
-      <div className="desenho">{p.desenho}</div>
+      <div className={`desenho efeito-${p.efeito}`}>{p.desenho}</div>
       <ul ref={listaRef}>
         <li data-falar={p.falar} data-festa={p.festa} data-quantidade={50} style={{ "--cor": p.cor }}>
           {[...p.palavra].map((letra, i) => (

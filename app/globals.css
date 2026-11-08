@@ -89,7 +89,7 @@ li.esperando {
 /* Nos jogos de soletrar, o mouse vira uma luvinha grande (a ponta do dedo é o clique) */
 body.luvinha,
 body.luvinha * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><g stroke='%23333' stroke-width='2' stroke-linejoin='round'><rect x='13' y='37' width='22' height='9' rx='3' fill='%23ff7eb6'/><rect x='11' y='19' width='26' height='21' rx='8' fill='white'/><ellipse cx='11' cy='28' rx='5' ry='7' fill='white'/><rect x='17' y='2' width='10' height='26' rx='5' fill='white'/></g><g stroke='%23333' stroke-width='1.5' stroke-linecap='round' fill='none'><path d='M28 26h8M28 31h8'/></g></svg>") 22 3, pointer !important;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M13 44 L41 44 L43 54 L11 54 Z' fill='%23ffb3d1'/><path d='M13 45 C9 39 10 31 12 27 L12 9 C12 3 21 3 21 9 L21 22 C22 18 29 18 29 23 C30 19 37 19 37 24 C38 21 44 22 44 27 L44 37 C44 42 41 45 37 45 Z' fill='white'/><path d='M29 23 L29 27 M37 24 L37 28' fill='none'/><path d='M12 31 C17 28 27 28 31 32 C27 37 18 37 13 36' fill='white'/></g><path d='M14 49.5 L40 49.5' stroke='%232b2b2b' stroke-width='1.5' stroke-linecap='round'/></svg>") 16 4, pointer !important;
 }
 
 /* Letras que o bichinho levou embora */
@@ -258,6 +258,41 @@ body.luvinha * {
 .jogo-palavras .desenho {
   font-size: min(10rem, 35vw);
   line-height: 1.1;
+}
+
+/* Cada figura tem seu jeitinho de se mexer, para não ficar parada */
+.jogo-palavras .desenho {
+  display: inline-block;
+}
+
+.desenho.efeito-balancar { animation: balancar 1.6s ease-in-out infinite alternate; }
+.desenho.efeito-pulsar { animation: pulsar 1.2s ease-in-out infinite alternate; }
+.desenho.efeito-girar { animation: girar 8s linear infinite; }
+.desenho.efeito-andar { animation: andar 2s ease-in-out infinite alternate; }
+.desenho.efeito-quicar { animation: quicar-bola 0.7s ease-in infinite alternate; }
+
+@keyframes balancar {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(10deg); }
+}
+
+@keyframes pulsar {
+  from { transform: scale(0.9); }
+  to { transform: scale(1.12); }
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes andar {
+  from { transform: translateX(-25px) rotate(-3deg); }
+  to { transform: translateX(25px) rotate(3deg); }
+}
+
+@keyframes quicar-bola {
+  from { transform: translateY(-30px) rotate(-20deg); }
+  to { transform: translateY(0) rotate(20deg) scaleY(0.92); }
 }
 
 .jogo-palavras .desenho.pulando {
