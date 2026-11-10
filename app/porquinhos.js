@@ -696,7 +696,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     porcos.classList.add("felizes");
     estado = "felizes";
     escada.classList.remove("usada");
-    voz.falar("Os porquinhos conseguiram! Aêêê! E eles viveram felizes para sempre!", () => depois(vitoria, 200));
+    voz.falar("Os porquinhos conseguiram! Aee! E eles viveram felizes para sempre!", () => depois(vitoria, 200));
     chuvaDeConfete();
     sons.musica();
     porcos.querySelectorAll(".porco").forEach((porco, i) => depois(() => passear(porco), 1200 + i * 400));
@@ -808,7 +808,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
     evento.preventDefault();
     trocarClasse(porco, "pulou");
     sons.inflar(1);
-    voz.falar("Aêêê!");
+    voz.falar("Aee!");
   }
 
   const acordar = () => sons.acordar();
