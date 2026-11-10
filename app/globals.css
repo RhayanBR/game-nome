@@ -111,7 +111,9 @@ body.luvinha button *,
 body.luvinha .porquinhos.pode-soprar .lobo,
 body.luvinha .porquinhos.pode-soprar .lobo *,
 body.luvinha .escada.aparece,
-body.luvinha .peca {
+body.luvinha .peca,
+body.luvinha .porcos.felizes .porco,
+body.luvinha .porcos.felizes .porco * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><g fill='white'><rect x='13' y='10' width='7' height='22' rx='3.5' transform='rotate(-14 16.5 21)'/><rect x='21' y='4' width='7' height='26' rx='3.5' transform='rotate(-4 24.5 17)'/><rect x='29' y='5' width='7' height='26' rx='3.5' transform='rotate(5 32.5 18)'/><rect x='37' y='11' width='7' height='21' rx='3.5' transform='rotate(15 40.5 21)'/><rect x='7' y='22' width='7' height='16' rx='3.5' transform='rotate(-40 10.5 30)'/><path d='M12 30 C12 25 44 25 44 30 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z'/></g></g></svg>") 28 28, pointer !important;
 }
 
@@ -132,7 +134,9 @@ body.luvinha button *:active,
 body.luvinha .porquinhos.pode-soprar .lobo:active,
 body.luvinha .porquinhos.pode-soprar .lobo *:active,
 body.luvinha .escada.aparece:active,
-body.luvinha .peca:active {
+body.luvinha .peca:active,
+body.luvinha .porcos.felizes .porco:active,
+body.luvinha .porcos.felizes .porco *:active {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><path d='M12 24 C12 16 17 14 20 17 C21 13 27 13 28 17 C29 13 35 13 36 17 C38 14 44 16 44 22 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z' fill='white'/><path d='M20 17 L20 24 M28 17 L28 24 M36 17 L36 24' fill='none'/><path d='M11 30 C17 27 28 27 32 31 C28 36 18 37 12 36' fill='white'/></g></svg>") 28 28, pointer !important;
 }
 
@@ -1235,7 +1239,23 @@ li .foto svg {
   to { transform: translateX(100vw); }
 }
 
-/* Fim: pulam de alegria na frente da casa */
+/* Fim: pulam de alegria na frente da casa, e ela pode tocar neles */
+.porcos.felizes {
+  pointer-events: auto;
+}
+
+.porcos.felizes .porco {
+  cursor: pointer;
+}
+
+.porco.pulou {
+  animation: porco-pulao 0.6s cubic-bezier(0.3, 0.6, 0.5, 1);
+}
+
+@keyframes porco-pulao {
+  45% { transform: translateY(-150%) rotate(-20deg) scale(1.25); }
+}
+
 .porcos.felizes .porco > span {
   animation: porco-feliz 0.35s ease-in-out infinite alternate;
 }
@@ -1276,13 +1296,13 @@ li .foto svg {
   to { rotate: 8deg; scale: 1.1; }
 }
 
-/* A escada aparece piscando, do tamanho da casa, encostada nela */
+/* A escada aparece piscando ao lado da casa, encostada na parede */
 .escada {
   position: absolute;
-  left: -22%;
+  left: -14%;
   bottom: 0;
   z-index: 2;
-  font-size: calc(var(--casa) * 0.82);
+  font-size: calc(var(--casa) * 0.48);
   line-height: 1;
   opacity: 0;
   transform: scale(0);
@@ -1294,7 +1314,7 @@ li .foto svg {
 .escada.aparece,
 .escada.usada {
   opacity: 1;
-  transform: rotate(14deg);
+  transform: rotate(10deg);
 }
 
 .escada.aparece {
@@ -1401,7 +1421,17 @@ li .foto svg {
   50% { scale: 1.08; }
 }
 
-/* A bochecha enche a cada toque (--inflar vai de 0 a 1) */
+/* O rosto vai ficando vermelho de tanto soprar (--inflar vai de 0 a 1) */
+.vermelho-lobo {
+  opacity: calc(var(--inflar, 0) * 0.55);
+  transition: opacity 0.2s;
+}
+
+.lobo.cansado .vermelho-lobo {
+  opacity: 0.5;
+}
+
+/* A bochecha enche a cada toque */
 .bochecha-lobo {
   transform-box: fill-box;
   transform-origin: center;
@@ -1440,6 +1470,17 @@ li .foto svg {
 @keyframes lobo-espera {
   from { rotate: -3deg; }
   to { rotate: 3deg; }
+}
+
+/* Casa pronta: o lobo cresce e encolhe um pouquinho chamando o toque dela.
+   Usa "scale" (não "transform"), para não brigar com o andar e o subir */
+.porquinhos.pode-soprar .lobo {
+  animation: lobo-chama 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes lobo-chama {
+  from { scale: 1; }
+  to { scale: 1.1; }
 }
 
 /* Andando e subindo: pulinhos */
