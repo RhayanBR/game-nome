@@ -306,17 +306,22 @@ function iniciarPorquinhos(raiz, aoVencer) {
     colocarCasa(0);
     // Os porquinhos chegam correndo pela esquerda, e o lobo vem atrás
     trocarClasse(porcos, "da-esquerda");
-    lobo.classList.add("sem-transicao", "andando");
+    loboVemDaEsquerda();
+    voz.falar("Era uma vez três porquinhos! Eles estão fugindo do lobo!", () => depois(comecarObra, 300));
+  }
+
+  // O lobo entra correndo pela esquerda, logo atrás dos porquinhos, e fica esperando
+  function loboVemDaEsquerda() {
+    lobo.className = "lobo sem-transicao andando";
     lobo.style.transform = "translateX(-60vw)";
     void lobo.offsetWidth;
     lobo.classList.remove("sem-transicao");
-    depois(() => (lobo.style.transform = ""), 500);
+    depois(() => (lobo.style.transform = ""), 300);
     depois(() => {
       lobo.classList.remove("andando");
       lobo.classList.add("esperando");
       porcos.classList.remove("da-esquerda");
-    }, 2200);
-    voz.falar("Era uma vez três porquinhos! Eles estão fugindo do lobo!", () => depois(comecarObra, 300));
+    }, 1800);
   }
 
   // Põe a casa da fase no lugar, ainda sem nenhuma peça (só o contorno clarinho)
@@ -502,7 +507,7 @@ function iniciarPorquinhos(raiz, aoVencer) {
       });
     }
     depois(
-      () => porquinhosFogem("Socorro! A casa de palha voou! Os porquinhos fugiram!", 1),
+      () => porquinhosFogem("A casa de palha voou! Corre, porquinhos!", 1),
       500
     );
   }
@@ -531,31 +536,39 @@ function iniciarPorquinhos(raiz, aoVencer) {
     desenho.classList.add("desabando");
     for (let i = 0; i < 22; i++) soltarTabua(c, true);
     depois(
-      () => porquinhosFogem("Socorro! A casa de madeira caiu! Os porquinhos fugiram de novo!", 2),
+      () => porquinhosFogem("A casa de madeira caiu! Corre, porquinhos!", 2),
       600
     );
   }
 
-  // Os porquinhos saem pela porta correndo para a direita e vem a próxima casa
+  // Os porquinhos saem pela porta correndo para a direita e o lobo corre atrás deles.
+  // Quando somem, a próxima casa já chega e eles voltam pela esquerda, com o lobo atrás
   function porquinhosFogem(fala, proxima) {
     porcos.classList.remove("entrando");
     porcos.classList.add("fugindo");
+    depois(() => {
+      lobo.className = "lobo andando";
+      lobo.style.transform = "translateX(115vw)";
+    }, 250);
     let falou = false;
-    let correu = false;
+    let chegou = false;
     const seguir = () => {
-      if (!falou || !correu) return;
-      colocarCasa(proxima);
-      trocarClasse(casa, "chegando");
-      depois(comecarObra, 900);
+      if (falou && chegou) comecarObra();
     };
     voz.falar(fala, () => {
       falou = true;
       seguir();
     });
     depois(() => {
-      correu = true;
+      colocarCasa(proxima);
+      trocarClasse(casa, "chegando");
+      trocarClasse(porcos, "da-esquerda");
+      loboVemDaEsquerda();
+    }, 1500);
+    depois(() => {
+      chegou = true;
       seguir();
-    }, 1800);
+    }, 2300);
   }
 
   // ---------- Tijolo: o lobo não consegue ----------
@@ -686,6 +699,84 @@ function iniciarPorquinhos(raiz, aoVencer) {
     voz.falar("Os porquinhos conseguiram! Aêêê! E eles viveram felizes para sempre!", () => depois(vitoria, 200));
     chuvaDeConfete();
     sons.musica();
+    porcos.querySelectorAll(".porco").forEach((porco, i) => depois(() => passear(porco), 1200 + i * 400));
+    depois(() => soltarBorboleta(0.25), 1500);
+    depois(() => soltarBorboleta(0.7), 2300);
+  }
+
+  // Leva um elemento até (x, y) da cena (pelo meio dele), virando para o lado em que anda.
+  // Os emojis olham para a esquerda, então espelha quando vai para a direita.
+  // Usa "translate" e "scale" (não "transform") para não brigar com o pulo e o giro.
+  function levar(el, base, x, y, segundos, jeito) {
+    const atual = el._posicao || { x: 0, y: 0 };
+    const novo = { x: x - base.x, y: y - base.y };
+    if (Math.abs(novo.x - atual.x) > 4) el.style.scale = novo.x > atual.x ? "-1 1" : "1 1";
+    el.style.transition = `translate ${segundos}s ${jeito}`;
+    el.style.translate = `${novo.x}px ${novo.y}px`;
+    el._posicao = novo;
+  }
+
+  // Meio do elemento antes de ele começar a andar (guardado na primeira vez,
+  // porque no meio do caminho ou de um pulo a caixa dele está em outro lugar)
+  function meioOriginal(el) {
+    if (!el._base) {
+      const c = caixa(el);
+      el._base = { x: c.x + c.w / 2, y: c.y + c.h / 2, w: c.w };
+    }
+    return el._base;
+  }
+
+  // No fim, os porquinhos passeiam pelo chão, de um lado para o outro da tela
+  function passear(porco) {
+    const W = raiz.clientWidth;
+    const H = raiz.clientHeight;
+    const base = meioOriginal(porco);
+    const largura = base.w;
+    const x = largura / 2 + Math.random() * (W - largura);
+    const y = base.y + (Math.random() - 0.6) * H * 0.06;
+    const distancia = Math.abs(x - (base.x + (porco._posicao?.x || 0)));
+    const segundos = Math.max(0.6, distancia / (W * 0.3));
+    levar(porco, base, x, y, segundos, "linear");
+    depois(() => passear(porco), segundos * 1000 + 300 + Math.random() * 1200);
+  }
+
+  // Duas borboletas voam pelo céu; quando ela toca, a borboleta dá uma cambalhota
+  function soltarBorboleta(de) {
+    const el = document.createElement("div");
+    el.className = "borboleta";
+    el.innerHTML = "<span>🦋</span>";
+    el.style.left = raiz.clientWidth * de + "px";
+    el.style.top = raiz.clientHeight * 0.2 + "px";
+    el.addEventListener("pointerdown", (evento) => tocarNaBorboleta(evento, el));
+    raiz.appendChild(el);
+    const base = meioOriginal(el);
+    const voar = () => {
+      const W = raiz.clientWidth;
+      const H = raiz.clientHeight;
+      const segundos = 1.4 + Math.random() * 1.4;
+      levar(el, base, W * (0.08 + Math.random() * 0.84), H * (0.08 + Math.random() * 0.45), segundos, "ease-in-out");
+      el._proximo = performance.now() + segundos * 1000;
+      depois(() => {
+        if (performance.now() >= el._proximo - 20) voar();
+      }, segundos * 1000);
+    };
+    el._voar = voar;
+    voar();
+  }
+
+  function tocarNaBorboleta(evento, el) {
+    evento.preventDefault();
+    trocarClasse(el.firstChild, "girou");
+    sons.inflar(0.6);
+    voz.falar("Borboleta!");
+    // Foge rapidinho para outro lugar
+    const W = raiz.clientWidth;
+    const H = raiz.clientHeight;
+    levar(el, meioOriginal(el), W * (0.08 + Math.random() * 0.84), H * (0.08 + Math.random() * 0.45), 0.7, "ease-out");
+    el._proximo = performance.now() + 700;
+    depois(() => {
+      if (performance.now() >= el._proximo - 20) el._voar();
+    }, 700);
   }
 
   function vitoria() {
@@ -739,9 +830,14 @@ function iniciarPorquinhos(raiz, aoVencer) {
     lobo.removeEventListener("pointerdown", tocarNoLobo);
     escada.removeEventListener("pointerdown", tocarNaEscada);
     porcos.removeEventListener("pointerdown", tocarNoPorco);
-    porcos.querySelectorAll(".porco").forEach((p) => (p.className = "porco"));
+    porcos.querySelectorAll(".porco").forEach((p) => {
+      p.className = "porco";
+      p.removeAttribute("style");
+      p._posicao = null;
+      p._base = null;
+    });
     document.body.classList.remove("luvinha");
-    raiz.querySelectorAll(".pedaco, .vento, .peca").forEach((el) => el.remove());
+    raiz.querySelectorAll(".pedaco, .vento, .peca, .borboleta").forEach((el) => el.remove());
     raiz.className = "porquinhos";
     lobo.className = "lobo";
     lobo.style.transform = "";
