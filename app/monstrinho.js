@@ -4,8 +4,10 @@ import { criarVoz } from "./voz";
 // "Monstrinho comilão": uma árvore com 5 maçãs e um monstrinho com fome no chão.
 // Ela toca numa maçã, a maçã cai quicando, o monstrinho vai pulando até ela e come
 // (crunch!), e a voz conta quantas ele já comeu. Quando acabam as maçãs, ele fica
-// com cara de "ué?", olha para a árvore, abre um bocão gigante e come a árvore inteira
-// (nhaaac!). Fica de barriga cheia, arrota e vem confete. Aí ela pode plantar de novo.
+// com cara de "ué?", abre um bocão gigante e come a árvore inteira (nhaaac!).
+// Aí deita no chão de barriga para cima, todo cheio, e depois de um tempinho sai
+// correndo para outra tela: lá tem uma parreira com 5 cachos de uva, e é tudo de novo.
+// Depois da parreira vem confete e ela pode plantar de novo.
 export default function Monstrinho() {
   const raizRef = useRef(null);
   const [rodada, setRodada] = useState(0);
@@ -22,10 +24,10 @@ export default function Monstrinho() {
   return (
     <div className="monstrinho" ref={raizRef}>
       <div className="chao" />
-      <div className="arvore" dangerouslySetInnerHTML={{ __html: ARVORE }} />
+      <div className="planta" />
       <div className="monstro">
         <div className="pulo">
-          <div className="corpo-monstro" dangerouslySetInnerHTML={{ __html: MONSTRO }} />
+          <div className="corpo-monstro" dangerouslySetInnerHTML={{ __html: MONSTRO + MONSTRO_DEITADO }} />
         </div>
         <div className="duvida">?</div>
       </div>
@@ -38,17 +40,6 @@ export default function Monstrinho() {
     </div>
   );
 }
-
-const CONTAGEM = ["", "Uma maçã!", "Duas maçãs!", "Três maçãs!", "Quatro maçãs!", "Cinco maçãs!"];
-
-// Onde ficam as 5 maçãs na copa (em % da árvore, pelo meio da maçã)
-const LUGARES = [
-  [28, 40],
-  [50, 20],
-  [73, 37],
-  [39, 61],
-  [64, 60],
-];
 
 // A árvore: tronco marrom e uma copa bem colorida, com florzinhas
 const ARVORE = `<svg viewBox="0 0 200 220">
@@ -90,7 +81,7 @@ const MACA = `<svg viewBox="0 0 60 64">
 // O monstrinho, de frente. Partes com classe para a animação:
 // orelhas e flor na cabeça, olhos (pupilas olham para os lados com --olhar-x/--olhar-y),
 // pálpebras que piscam, olhos felizes (^^), sorriso, bocona aberta, baba e braços.
-const MONSTRO = `<svg viewBox="0 0 140 130">
+const MONSTRO = `<svg class="monstro-em-pe" viewBox="0 0 140 130">
 <g stroke="#2f6b1a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
   <ellipse cx="46" cy="122" rx="16" ry="7" fill="#5aa832"/>
   <ellipse cx="94" cy="122" rx="16" ry="7" fill="#5aa832"/>
@@ -138,6 +129,39 @@ const MONSTRO = `<svg viewBox="0 0 140 130">
     <path d="M60 83 L62 89 L65 83 M75 83 L78 89 L80 83" fill="white" stroke-width="1.5"/>
   </g>
   <path class="baba" d="M80 95 C80 100 77 104 80 106 C83 104 80 100 80 95 Z" fill="#b3e5fc" stroke="#4fc3f7" stroke-width="1.5"/>
+</g>
+</svg>`;
+
+// O monstrinho deitado no chão de barriga para cima (barriga cheia): cabeça à esquerda,
+// barrigona redonda para o alto, pezinhos para cima e as mãos fazendo carinho na barriga
+const MONSTRO_DEITADO = `<svg class="monstro-deitado" viewBox="0 0 140 130">
+<g stroke="#2f6b1a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="124" cy="90" rx="8" ry="14" fill="#5aa832" transform="rotate(-30 124 90)"/>
+  <ellipse cx="134" cy="102" rx="8" ry="14" fill="#5aa832" transform="rotate(-55 134 102)"/>
+  <ellipse cx="78" cy="106" rx="56" ry="22" fill="#8bdc5a"/>
+  <g class="barriga-deitado">
+    <ellipse cx="84" cy="88" rx="40" ry="32" fill="#c8f2a2"/>
+    <path d="M70 72 Q76 66 84 68" fill="none" stroke="white" stroke-width="4" opacity="0.8"/>
+  </g>
+  <path d="M8 66 C-2 58 -2 48 4 44" fill="none" stroke="#2f6b1a"/>
+  <path d="M3 52 C-6 46 -12 50 -12 54 C-6 58 0 57 3 52 Z" fill="#7cb342"/>
+  <g stroke="none">
+    <circle cx="4" cy="40" r="5" fill="#f48fb1"/><circle cx="-2" cy="45" r="5" fill="#f48fb1"/><circle cx="10" cy="45" r="5" fill="#f48fb1"/>
+    <circle cx="4" cy="44" r="3.5" fill="#ffeb3b"/>
+  </g>
+  <circle cx="0" cy="78" r="8" fill="#8bdc5a"/>
+  <circle cx="46" cy="72" r="8" fill="#8bdc5a"/>
+  <circle cx="24" cy="94" r="30" fill="#8bdc5a"/>
+  <ellipse cx="10" cy="104" rx="6" ry="4" fill="#ff8a80" stroke="none" opacity="0.7"/>
+  <ellipse cx="38" cy="104" rx="6" ry="4" fill="#ff8a80" stroke="none" opacity="0.7"/>
+  <path d="M6 92 Q14 82 22 92 M28 92 Q36 82 44 92" fill="none" stroke-width="3.5"/>
+  <path d="M15 106 Q24 115 33 106" fill="none" stroke-width="3"/>
+  <g class="maos-barriga">
+    <path d="M56 104 C62 92 68 84 72 78" fill="none" stroke="#2f6b1a" stroke-width="13"/>
+    <path d="M56 104 C62 92 68 84 72 78" fill="none" stroke="#8bdc5a" stroke-width="8"/>
+    <path d="M112 104 C108 92 102 82 98 76" fill="none" stroke="#2f6b1a" stroke-width="13"/>
+    <path d="M112 104 C108 92 102 82 98 76" fill="none" stroke="#8bdc5a" stroke-width="8"/>
+  </g>
 </g>
 </svg>`;
 
@@ -279,6 +303,94 @@ function criarSons() {
   };
 }
 
+// A parreira: dois postes de madeira, uma trave em cima coberta de folhas,
+// o tronquinho torto subindo pelo meio e gavinhas enroladas
+const PARREIRA = `<svg viewBox="0 0 200 220">
+<g stroke="#4e342e" stroke-width="3" stroke-linejoin="round">
+  <rect x="20" y="62" width="14" height="158" rx="3" fill="#a1683a"/>
+  <rect x="166" y="62" width="14" height="158" rx="3" fill="#a1683a"/>
+  <path d="M94 220 C98 192 84 172 96 146 C106 122 90 100 100 66" fill="none" stroke="#4e342e" stroke-width="13" stroke-linecap="round"/>
+  <path d="M94 220 C98 192 84 172 96 146 C106 122 90 100 100 66" fill="none" stroke="#8d5a34" stroke-width="8" stroke-linecap="round"/>
+  <rect x="6" y="56" width="188" height="14" rx="5" fill="#8d5a34"/>
+</g>
+<g fill="none" stroke="#558b2f" stroke-width="2.5" stroke-linecap="round">
+  <path d="M30 70 c-6 8 4 14 8 8 c3 -5 -4 -7 -5 -3"/>
+  <path d="M168 70 c6 8 -4 14 -8 8 c-3 -5 4 -7 5 -3"/>
+  <path d="M100 120 c10 -4 14 6 8 10 c-4 3 -7 -2 -3 -4"/>
+  <path d="M58 70 c-2 10 8 12 9 6"/>
+  <path d="M142 70 c2 10 -8 12 -9 6"/>
+</g>
+<g stroke="#2e7d32" stroke-width="3">
+  <circle cx="26" cy="50" r="22" fill="#43a047"/>
+  <circle cx="174" cy="50" r="22" fill="#43a047"/>
+  <circle cx="60" cy="42" r="26" fill="#66bb6a"/>
+  <circle cx="140" cy="42" r="26" fill="#66bb6a"/>
+  <circle cx="100" cy="36" r="30" fill="#81c784"/>
+  <circle cx="44" cy="62" r="16" fill="#388e3c"/>
+  <circle cx="156" cy="62" r="16" fill="#388e3c"/>
+  <circle cx="100" cy="62" r="18" fill="#388e3c"/>
+  <rect x="26" y="40" width="148" height="22" fill="#5cb860" stroke="none"/>
+</g>
+<g fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" opacity="0.7">
+  <path d="M60 30 v18 M52 38 l8 6 l8 -6"/>
+  <path d="M100 22 v20 M91 31 l9 7 l9 -7"/>
+  <path d="M140 30 v18 M132 38 l8 6 l8 -6"/>
+</g>
+<g fill="#a5d6a7" stroke="none" opacity="0.7">
+  <ellipse cx="86" cy="18" rx="12" ry="5"/>
+  <ellipse cx="46" cy="28" rx="8" ry="4"/>
+</g>
+</svg>`;
+
+// Um cachinho de uva roxa, com cabinho e folhinha
+const UVA = `<svg viewBox="0 0 60 64">
+<path d="M30 14 C30 8 31 4 34 1" stroke="#5d4037" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M32 8 C40 0 52 2 54 8 C46 12 38 13 32 8 Z" fill="#7cb342" stroke="#33691e" stroke-width="2"/>
+<g fill="#8e24aa" stroke="#4a148c" stroke-width="2.2">
+  <circle cx="30" cy="54" r="7.5"/>
+  <circle cx="23" cy="43" r="7.5"/><circle cx="37" cy="43" r="7.5"/>
+  <circle cx="16" cy="32" r="7.5"/><circle cx="30" cy="32" r="7.5"/><circle cx="44" cy="32" r="7.5"/>
+  <circle cx="11" cy="21" r="7.5"/><circle cx="24" cy="20" r="7.5"/><circle cx="37" cy="20" r="7.5"/><circle cx="50" cy="21" r="7.5"/>
+</g>
+<g fill="white" opacity="0.55">
+  <circle cx="27" cy="51" r="2"/><circle cx="20" cy="40" r="2"/><circle cx="34" cy="40" r="2"/>
+  <circle cx="13" cy="29" r="2"/><circle cx="27" cy="29" r="2"/><circle cx="41" cy="29" r="2"/>
+  <circle cx="8" cy="18" r="2"/><circle cx="21" cy="17" r="2"/><circle cx="34" cy="17" r="2"/><circle cx="47" cy="18" r="2"/>
+</g>
+</svg>`;
+
+// As fases: primeiro as maçãs da árvore, depois as uvas da parreira.
+// lugares: onde fica cada fruta (em % da planta, pelo meio da fruta).
+const FASES = [
+  {
+    nome: "maca",
+    planta: ARVORE,
+    fruta: MACA,
+    tamanho: 20, // largura da caixa de toque, em % da planta
+    lugares: [[28, 40], [50, 20], [73, 37], [39, 61], [64, 60]],
+    contagem: ["", "Uma maçã!", "Duas maçãs!", "Três maçãs!", "Quatro maçãs!", "Cinco maçãs!"],
+    migalhas: ["#e53935", "#fff3c4"],
+    chegou: "Olha o monstrinho! Ele está com fome! Toca na maçã!",
+    brotou: "Uma árvore nova! Toca na maçã!",
+    acabou: "Ué? Acabaram as maçãs!",
+    gostosa: "Hum... A árvore parece gostosa!",
+    comeu: "Ele comeu a árvore inteira! Que barrigão!",
+  },
+  {
+    nome: "uva",
+    planta: PARREIRA,
+    fruta: UVA,
+    tamanho: 18,
+    lugares: [[17, 44], [33, 52], [50, 44], [67, 52], [83, 44]],
+    contagem: ["", "Uma uva!", "Duas uvas!", "Três uvas!", "Quatro uvas!", "Cinco uvas!"],
+    migalhas: ["#8e24aa", "#e1bee7"],
+    chegou: "Olha! Uvas! Toca na uva!",
+    acabou: "Ué? Acabaram as uvas!",
+    gostosa: "Hum... A parreira parece gostosa!",
+    comeu: "Ele comeu a parreira inteira! Que barrigão!",
+  },
+];
+
 // Toda a brincadeira roda direto no DOM (animações com CSS, timers e voz).
 // Devolve uma função de limpeza que para tudo e deixa a tela como no começo.
 function iniciarMonstrinho(raiz, aoVencer, brotar) {
@@ -294,15 +406,16 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
 
   const voz = criarVoz(depois);
   const sons = criarSons();
-  const arvore = raiz.querySelector(".arvore");
+  const planta = raiz.querySelector(".planta");
   const chao = raiz.querySelector(".chao");
   const monstro = raiz.querySelector(".monstro");
   const pulo = raiz.querySelector(".pulo");
   const corpo = raiz.querySelector(".corpo-monstro");
   const duvida = raiz.querySelector(".duvida");
 
-  // esperando: ela pode tocar nas maçãs (e no monstrinho); ocupado: alguma animação acontecendo
+  // esperando: ela pode tocar nas frutas (e no monstrinho); ocupado: alguma animação acontecendo
   let estado = "ocupado";
+  let fase = 0;
   let comidas = 0;
   let dica = 0; // contador para cancelar a dica quando ela toca antes
   let andar = 0; // contador para ignorar chegadas de caminhadas antigas
@@ -320,6 +433,12 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     return { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height };
   }
 
+  // Onde fica a boca do monstrinho na cena (a bocona está em 96 de 130 no desenho)
+  function boca() {
+    const c = caixa(corpo);
+    return { x: c.x + c.w * 0.5, y: c.y + c.h * (96 / 130), w: c.w, h: c.h };
+  }
+
   function soltarPedaco(conteudo, classe, x, y, props, duracao = 3000) {
     const el = document.createElement("div");
     el.className = `pedaco ${classe}`;
@@ -332,34 +451,39 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     return el;
   }
 
-  // Para onde o monstrinho olha: "cima" (as maçãs), "frente" (para ela), "arvore" (o tronco)
+  // Para onde o monstrinho olha: "cima" (as frutas), "frente" (para ela), "arvore" (a planta)
   function olhar(para) {
     monstro.classList.remove("olha-cima", "olha-frente", "olha-arvore");
     monstro.classList.add(`olha-${para}`);
   }
 
   // Leva o monstrinho, pulando, até que o meio dele fique em x. Chama chegou() lá.
-  // Devolve quanto tempo vai demorar.
-  function irPulando(x, chegou) {
+  // Devolve quanto tempo vai demorar. Correndo, vai bem mais depressa.
+  function irPulando(x, chegou, correndo = false) {
     const minha = ++andar;
     const atual = monstro._x || 0;
-    const base = monstro._base;
-    const destino = x - base;
-    const segundos = Math.max(0.5, Math.abs(destino - atual) / (raiz.clientWidth * 0.55));
+    const destino = x - monstro._base;
+    const velocidade = raiz.clientWidth * (correndo ? 1.4 : 0.9);
+    const segundos = Math.max(0.3, Math.abs(destino - atual) / velocidade);
     monstro._x = destino;
-    pulo.classList.add("pulando");
+    pulo.classList.add(correndo ? "correndo" : "pulando");
     monstro.style.transition = `translate ${segundos}s linear`;
     monstro.style.translate = `${destino}px 0`;
     depois(() => {
       if (minha !== andar) return;
-      pulo.classList.remove("pulando");
+      pulo.classList.remove("pulando", "correndo");
       if (chegou) chegou();
     }, segundos * 1000);
     return segundos * 1000;
   }
 
-  function voltarParaCasa(chegou) {
-    irPulando(monstro._base, chegou);
+  // Põe o monstrinho num lugar na hora, sem andar (para entrar pelo canto da tela)
+  function teleportar(x) {
+    andar++;
+    monstro._x = x - monstro._base;
+    monstro.style.transition = "none";
+    monstro.style.translate = `${monstro._x}px 0`;
+    void monstro.offsetWidth;
   }
 
   // ---------- Começo ----------
@@ -368,51 +492,61 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     monstro._base = m.x + m.w / 2;
     monstro._x = 0;
     olhar("cima");
-    pendurarMacas();
+    colocarPlanta(0);
     raiz.classList.add("com-fome");
 
     if (brotar) {
       // A árvore nova sobe do chão e as maçãs aparecem uma por uma
-      trocarClasse(arvore, "brotando");
+      trocarClasse(planta, "brotando");
       sons.brotar();
-      depois(() => voz.falar("Olha! Uma árvore nova! Toca numa maçã!", esperar), 900);
+      depois(() => voz.falar(FASES[0].brotou, esperar), 700);
     } else {
-      voz.falar("Olha o monstrinho! Ele está com fome! Toca numa maçã!", esperar);
+      voz.falar(FASES[0].chegou, esperar);
     }
   }
 
-  function pendurarMacas() {
-    LUGARES.forEach(([x, y], i) => {
+  // Monta a planta da fase com as frutas penduradas
+  function colocarPlanta(n) {
+    fase = n;
+    comidas = 0;
+    const f = FASES[n];
+    planta.getAnimations().forEach((a) => a.cancel());
+    planta.className = `planta planta-${f.nome}`;
+    planta.innerHTML = f.planta;
+    raiz.classList.remove(...FASES.map((x) => `cena-${x.nome}`));
+    raiz.classList.add(`cena-${f.nome}`);
+    f.lugares.forEach(([x, y], i) => {
       const el = document.createElement("div");
-      el.className = "maca";
-      el.innerHTML = MACA;
+      el.className = "fruta";
+      el.innerHTML = f.fruta;
       el.style.left = x + "%";
       el.style.top = y + "%";
+      el.style.width = f.tamanho + "%";
       el.style.setProperty("--i", i);
-      el.addEventListener("pointerdown", (evento) => tocarNaMaca(evento, el));
-      arvore.appendChild(el);
+      el.addEventListener("pointerdown", (evento) => tocarNaFruta(evento, el));
+      planta.appendChild(el);
     });
   }
 
   function esperar() {
     estado = "esperando";
-    raiz.classList.add("esperando");
+    raiz.classList.add("esperando", "com-fome");
     olhar("cima");
     agendarDica();
   }
 
-  // Se ela demora, uma maçã balança mais forte chamando
+  // Se ela demora, uma fruta pula chamando
   function agendarDica() {
     const minha = ++dica;
     depois(() => {
       if (minha !== dica || estado !== "esperando") return;
-      const macas = arvore.querySelectorAll(".maca");
-      if (macas.length) trocarClasse(macas[Math.floor(Math.random() * macas.length)], "chamando");
+      const frutas = planta.querySelectorAll(".fruta");
+      if (frutas.length) trocarClasse(frutas[Math.floor(Math.random() * frutas.length)], "chamando");
     }, 6000);
   }
 
-  // ---------- Ela toca numa maçã ----------
-  function tocarNaMaca(evento, el) {
+  // ---------- Ela toca numa fruta ----------
+  function tocarNaFruta(evento, el) {
     evento.preventDefault();
     evento.stopPropagation();
     sons.acordar();
@@ -424,7 +558,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     olhar("frente");
     monstro.classList.add("animado");
 
-    // A maçã sai da árvore e passa a cair pela cena
+    // A fruta sai da planta e passa a cair pela cena
     const m = caixa(el);
     el.classList.remove("chamando");
     el.classList.add("caindo");
@@ -437,8 +571,8 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     const chaoY = caixa(chao).y;
     const dx = -m.w * (0.3 + Math.random() * 0.5);
     const dy = chaoY - (m.y + m.h * 0.85);
-    const quica = m.h * 0.9;
-    const DURACAO = 1100;
+    const quica = m.h * 0.8;
+    const DURACAO = 800;
     el.animate(
       [
         { transform: "translate(0, 0) rotate(0deg)", easing: "cubic-bezier(0.5, 0, 1, 1)" },
@@ -453,14 +587,14 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     depois(() => sons.quique(1), DURACAO * 0.5);
     depois(() => sons.quique(0.5), DURACAO * 0.84);
 
-    // O monstrinho vai pulando até onde a maçã cai (a maçã fica do lado direito dele)
+    // O monstrinho vai pulando até onde a fruta cai (a fruta fica do lado direito dele)
     const largura = caixa(monstro).w;
     const chegada = irPulando(m.x + m.w / 2 + dx - largura * 0.45, null);
-    depois(() => comerMaca(el), Math.max(DURACAO + 100, chegada));
+    depois(() => comerFruta(el), Math.max(DURACAO + 50, chegada));
   }
 
-  // Abre a boca, a maçã voa para dentro, crunch, e ele mastiga feliz
-  function comerMaca(el) {
+  // Abre a boca, a fruta voa para dentro, crunch, e ele mastiga feliz
+  function comerFruta(el) {
     pulo.classList.remove("pulando");
     monstro.classList.remove("animado");
     raiz.classList.remove("com-fome");
@@ -468,20 +602,18 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
 
     depois(() => {
       const a = caixa(el);
-      const c = caixa(corpo);
+      const b = boca();
       el.getAnimations().forEach((animacao) => animacao.cancel());
       el.style.left = a.x + "px";
       el.style.top = a.y + "px";
-      const bocaX = c.x + c.w * 0.5;
-      const bocaY = c.y + c.h * (96 / 130);
       el.animate(
         [
           { transform: "translate(0, 0) rotate(-125deg) scale(1)" },
-          { transform: `translate(${bocaX - (a.x + a.w / 2)}px, ${bocaY - (a.y + a.h / 2)}px) rotate(-200deg) scale(0.3)` },
+          { transform: `translate(${b.x - (a.x + a.w / 2)}px, ${b.y - (a.y + a.h / 2)}px) rotate(-200deg) scale(0.3)` },
         ],
-        { duration: 260, easing: "ease-in", fill: "forwards" }
+        { duration: 200, easing: "ease-in", fill: "forwards" }
       );
-    }, 220);
+    }, 120);
 
     depois(() => {
       el.remove();
@@ -495,128 +627,165 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       const seguir = () => {
         if (falou && mastigou) satisfeito();
       };
-      voz.falar(`${CONTAGEM[comidas]} Hum, que delícia!`, () => {
+      voz.falar(FASES[fase].contagem[comidas], () => {
         falou = true;
         seguir();
       });
       depois(() => {
         mastigou = true;
         seguir();
-      }, 1300);
-    }, 500);
+      }, 700);
+    }, 330);
   }
 
-  // Pedacinhos de maçã voando da boca
+  // Pedacinhos da fruta voando da boca
   function migalhas() {
-    const c = caixa(corpo);
-    const x = c.x + c.w * 0.5;
-    const y = c.y + c.h * (96 / 130);
+    const b = boca();
+    const cores = FASES[fase].migalhas;
     for (let i = 0; i < 9; i++) {
-      soltarPedaco("", "migalha", x, y, {
-        "--x": (Math.random() - 0.5) * c.w * 1.2 + "px",
-        "--y": -c.h * (0.1 + Math.random() * 0.4) + "px",
+      soltarPedaco("", "migalha", b.x, b.y, {
+        "--x": (Math.random() - 0.5) * b.w * 1.2 + "px",
+        "--y": -b.h * (0.1 + Math.random() * 0.4) + "px",
         "--giro": Math.random() * 720 - 360 + "deg",
-        "--tempo": 0.6 + Math.random() * 0.4 + "s",
-        width: c.w * 0.07 + "px",
-        height: c.w * 0.05 + "px",
-        background: i % 3 === 0 ? "#e53935" : "#fff3c4",
-      }, 1100);
+        "--tempo": 0.5 + Math.random() * 0.3 + "s",
+        width: b.w * 0.07 + "px",
+        height: b.w * 0.05 + "px",
+        background: cores[i % 3 === 0 ? 0 : 1],
+      }, 900);
     }
   }
 
+  // Mastigou: fica feliz um instante. Se ainda tem fruta, ela já pode tocar na próxima
+  // enquanto ele volta (não precisa esperar ele chegar)
   function satisfeito() {
     corpo.classList.remove("mastigando");
     corpo.classList.add("feliz");
     depois(() => {
       corpo.classList.remove("feliz");
-      if (comidas < LUGARES.length) {
-        raiz.classList.add("com-fome");
-        voltarParaCasa(esperar);
+      if (comidas < FASES[fase].lugares.length) {
+        voltarParaCasa(null);
+        esperar();
       } else {
         voltarParaCasa(acabaram);
       }
-    }, 700);
+    }, 300);
   }
 
-  // ---------- Acabaram as maçãs: ué? ----------
+  function voltarParaCasa(chegou) {
+    irPulando(monstro._base, chegou);
+  }
+
+  // ---------- Acabaram as frutas: ué? ----------
   function acabaram() {
     olhar("cima");
     depois(() => {
       olhar("frente");
       duvida.classList.add("aparece");
-      voz.falar("Ué? Acabaram as maçãs!", () => depois(olharArvore, 300));
-    }, 900);
+      voz.falar(FASES[fase].acabou, () => depois(olharPlanta, 150));
+    }, 500);
   }
 
-  function olharArvore() {
+  function olharPlanta() {
     duvida.classList.remove("aparece");
     olhar("arvore");
     depois(() => {
       corpo.classList.add("arregalado");
       raiz.classList.add("com-fome");
-      voz.falar("Hum... A árvore parece gostosa!", () => depois(abocanhar, 200));
-    }, 600);
+      voz.falar(FASES[fase].gostosa, abocanhar);
+    }, 350);
   }
 
-  // Abre um bocão gigante, vai pulando até a árvore, cresce e engole tudo de uma vez
+  // Abre um bocão gigante, vai pulando até a planta, cresce e engole tudo de uma vez
   function abocanhar() {
     raiz.classList.remove("com-fome");
     corpo.classList.remove("arregalado");
     corpo.classList.add("bocao");
-    const a = caixa(arvore);
-    irPulando(a.x + a.w * 0.42, () => {
+    const p = caixa(planta);
+    irPulando(p.x + p.w * 0.42, () => {
       corpo.classList.add("gigante");
-      depois(engolirArvore, 380);
+      depois(engolirPlanta, 330);
     });
   }
 
-  function engolirArvore() {
-    const a = caixa(arvore);
-    const c = caixa(corpo);
-    const bocaX = c.x + c.w * 0.5;
-    const bocaY = c.y + c.h * (96 / 130);
-    arvore.animate(
+  function engolirPlanta() {
+    const p = caixa(planta);
+    const b = boca();
+    planta.animate(
       [
         { transform: "translate(0, 0) scale(1)", opacity: 1 },
-        { transform: `translate(${bocaX - (a.x + a.w / 2)}px, ${bocaY - (a.y + a.h / 2)}px) scale(0.05)`, opacity: 0.6 },
+        { transform: `translate(${b.x - (p.x + p.w / 2)}px, ${b.y - (p.y + p.h / 2)}px) scale(0.05)`, opacity: 0.6 },
       ],
-      { duration: 450, easing: "ease-in", fill: "forwards" }
+      { duration: 400, easing: "ease-in", fill: "forwards" }
     );
     sons.nhac();
     voz.falar("Nhaaac!");
 
-    // Nuvem de fumaça de desenho animado onde estava a árvore
+    // Nuvem de fumaça de desenho animado onde estava a planta
     for (let i = 0; i < 16; i++) {
       depois(() => {
-        soltarPedaco("", "nuvem", a.x + a.w * (0.15 + Math.random() * 0.7), a.y + a.h * (0.15 + Math.random() * 0.8), {
-          "--x": (Math.random() - 0.5) * a.w * 0.4 + "px",
-          "--y": -a.h * (0.1 + Math.random() * 0.2) + "px",
-          "--tempo": 1 + Math.random() * 0.6 + "s",
-          width: a.w * (0.2 + Math.random() * 0.15) + "px",
-          height: a.w * (0.2 + Math.random() * 0.15) + "px",
-        }, 1800);
-      }, 250 + Math.random() * 300);
+        soltarPedaco("", "nuvem", p.x + p.w * (0.15 + Math.random() * 0.7), p.y + p.h * (0.15 + Math.random() * 0.8), {
+          "--x": (Math.random() - 0.5) * p.w * 0.4 + "px",
+          "--y": -p.h * (0.1 + Math.random() * 0.2) + "px",
+          "--tempo": 0.9 + Math.random() * 0.5 + "s",
+          width: p.w * (0.2 + Math.random() * 0.15) + "px",
+          height: p.w * (0.2 + Math.random() * 0.15) + "px",
+        }, 1600);
+      }, 200 + Math.random() * 250);
     }
 
     depois(() => {
-      arvore.classList.add("comida");
+      planta.classList.add("comida");
       corpo.classList.remove("bocao", "gigante");
       corpo.classList.add("mastigando", "cheio");
-    }, 600);
-    depois(barrigaCheia, 1700);
+    }, 500);
+    depois(deitar, 1200);
   }
 
-  // ---------- Barriga cheia ----------
-  function barrigaCheia() {
+  // ---------- Barriga cheia: deita no chão de barriga para cima ----------
+  function deitar() {
     corpo.classList.remove("mastigando");
-    corpo.classList.add("feliz", "esfregando");
+    corpo.classList.add("feliz", "deitado");
     olhar("frente");
-    sons.arroto();
+    depois(() => sons.arroto(), 500);
+    const ultima = fase === FASES.length - 1;
+    let falou = false;
+    let descansou = false;
+    const seguir = () => {
+      if (!falou || !descansou) return;
+      if (ultima) vitoria();
+      else levantarECorrer();
+    };
     depois(() => {
-      voz.falar("Ele comeu a árvore inteira! Que barrigão!", () => depois(vitoria, 200));
-      chuvaDeConfete();
-      sons.musica();
+      voz.falar(FASES[fase].comeu, () => {
+        falou = true;
+        seguir();
+      });
+      if (ultima) {
+        chuvaDeConfete();
+        sons.musica();
+      }
     }, 900);
+    // Fica um tempinho deitado, descansando a barriga
+    depois(() => {
+      descansou = true;
+      seguir();
+    }, 3000);
+  }
+
+  // Levanta num pulo e sai correndo pela direita; na outra tela, a parreira já
+  // chega deslizando e ele entra correndo pela esquerda
+  function levantarECorrer() {
+    corpo.classList.remove("deitado", "cheio", "feliz");
+    trocarClasse(pulo, "pulinho");
+    const largura = caixa(monstro).w;
+    depois(() => {
+      irPulando(raiz.clientWidth + largura, () => {
+        colocarPlanta(fase + 1);
+        trocarClasse(planta, "chegando");
+        teleportar(-largura);
+        irPulando(monstro._base, () => voz.falar(FASES[fase].chegou, esperar), true);
+      }, true);
+    }, 400);
   }
 
   function vitoria() {
@@ -641,7 +810,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     }
   }
 
-  // Tocar no monstrinho: ele dá um pulinho e pede maçã (no fim, comemora)
+  // Tocar no monstrinho: ele dá um pulinho e pede comida (no fim, arrota)
   function tocarNoMonstro(evento) {
     evento.preventDefault();
     sons.acordar();
@@ -652,7 +821,7 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     }
     if (estado !== "esperando" || voz.falando) return;
     trocarClasse(pulo, "pulinho");
-    voz.falar("Eu quero maçã!");
+    voz.falar("Eu quero mais!");
   }
 
   const acordar = () => sons.acordar();
@@ -670,10 +839,11 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     raiz.removeEventListener("pointerdown", acordar);
     monstro.removeEventListener("pointerdown", tocarNoMonstro);
     document.body.classList.remove("luvinha");
-    raiz.querySelectorAll(".pedaco, .maca").forEach((el) => el.remove());
+    raiz.querySelectorAll(".pedaco, .fruta").forEach((el) => el.remove());
     raiz.className = "monstrinho";
-    arvore.getAnimations().forEach((a) => a.cancel());
-    arvore.className = "arvore";
+    planta.getAnimations().forEach((a) => a.cancel());
+    planta.className = "planta";
+    planta.innerHTML = "";
     monstro.className = "monstro";
     monstro.removeAttribute("style");
     monstro._x = 0;
