@@ -6,6 +6,7 @@ import Palavras from "./palavras";
 import Animais from "./animais";
 import Corrida from "./corrida";
 import Porquinhos from "./porquinhos";
+import Monstrinho from "./monstrinho";
 
 export default function Inicio() {
   const [jogo, setJogo] = useState(null);
@@ -33,6 +34,10 @@ export default function Inicio() {
           <span className="figura">🐷</span>
           Três porquinhos
         </button>
+        <button className="escolha" style={{ "--cor": "#00897b" }} onClick={() => setJogo("monstrinho")}>
+          <span className="figura">🍎</span>
+          Monstrinho
+        </button>
       </div>
     );
   }
@@ -47,6 +52,7 @@ export default function Inicio() {
       {jogo === "animais" && <Animais />}
       {jogo === "corrida" && <Corrida />}
       {jogo === "porquinhos" && <Porquinhos />}
+      {jogo === "monstrinho" && <Monstrinho />}
     </>
   );
 }

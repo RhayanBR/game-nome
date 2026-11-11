@@ -86,7 +86,7 @@ li.esperando {
   cursor: default;
 }
 
-/* Nos jogos de soletrar, na corrida e nos porquinhos, o mouse vira uma luvinha grande (a ponta do dedo é o clique) */
+/* Nos jogos de soletrar, na corrida, nos porquinhos e no monstrinho, o mouse vira uma luvinha grande (a ponta do dedo é o clique) */
 body.luvinha,
 body.luvinha * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M13 44 L41 44 L43 54 L11 54 Z' fill='%23ffb3d1'/><path d='M13 45 C9 39 10 31 12 27 L12 9 C12 3 21 3 21 9 L21 22 C22 18 29 18 29 23 C30 19 37 19 37 24 C38 21 44 22 44 27 L44 37 C44 42 41 45 37 45 Z' fill='white'/><path d='M29 23 L29 27 M37 24 L37 28' fill='none'/><path d='M12 31 C17 28 27 28 31 32 C27 37 18 37 13 36' fill='white'/></g><path d='M14 49.5 L40 49.5' stroke='%232b2b2b' stroke-width='1.5' stroke-linecap='round'/></svg>") 16 4, pointer !important;
@@ -115,7 +115,11 @@ body.luvinha .peca,
 body.luvinha .porcos.felizes .porco,
 body.luvinha .porcos.felizes .porco *,
 body.luvinha .borboleta,
-body.luvinha .borboleta * {
+body.luvinha .borboleta *,
+body.luvinha .monstrinho.esperando .maca,
+body.luvinha .monstrinho.esperando .maca *,
+body.luvinha .monstrinho .monstro,
+body.luvinha .monstrinho .monstro * {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><g fill='white'><rect x='13' y='10' width='7' height='22' rx='3.5' transform='rotate(-14 16.5 21)'/><rect x='21' y='4' width='7' height='26' rx='3.5' transform='rotate(-4 24.5 17)'/><rect x='29' y='5' width='7' height='26' rx='3.5' transform='rotate(5 32.5 18)'/><rect x='37' y='11' width='7' height='21' rx='3.5' transform='rotate(15 40.5 21)'/><rect x='7' y='22' width='7' height='16' rx='3.5' transform='rotate(-40 10.5 30)'/><path d='M12 30 C12 25 44 25 44 30 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z'/></g></g></svg>") 28 28, pointer !important;
 }
 
@@ -140,7 +144,11 @@ body.luvinha .peca:active,
 body.luvinha .porcos.felizes .porco:active,
 body.luvinha .porcos.felizes .porco *:active,
 body.luvinha .borboleta:active,
-body.luvinha .borboleta *:active {
+body.luvinha .borboleta *:active,
+body.luvinha .monstrinho.esperando .maca:active,
+body.luvinha .monstrinho.esperando .maca *:active,
+body.luvinha .monstrinho .monstro:active,
+body.luvinha .monstrinho .monstro *:active {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='%232b2b2b' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'><path d='M15 44 L41 44 L43 54 L13 54 Z' fill='%23ffb3d1'/><path d='M12 24 C12 16 17 14 20 17 C21 13 27 13 28 17 C29 13 35 13 36 17 C38 14 44 16 44 22 L44 36 C44 42 40 46 34 46 L22 46 C16 46 12 42 12 36 Z' fill='white'/><path d='M20 17 L20 24 M28 17 L28 24 M36 17 L36 24' fill='none'/><path d='M11 30 C17 27 28 27 32 31 C28 36 18 37 12 36' fill='white'/></g></svg>") 28 28, pointer !important;
 }
 
@@ -632,18 +640,18 @@ li .foto svg {
   }
 }
 
-/* Celular deitado: os 5 botões do menu cabem numa linha só */
+/* Celular deitado: os 6 botões do menu cabem numa linha só */
 @media (max-height: 500px) and (orientation: landscape) {
   .menu {
     flex-wrap: nowrap;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
 
   .menu .escolha {
     min-width: 0;
-    width: 18vw;
+    width: 15vw;
     padding: 0.7rem 0.3rem;
-    font-size: min(1.3rem, 2.6vw);
+    font-size: min(1.2rem, 2.2vw);
   }
 
   .menu .escolha .figura {
@@ -1673,7 +1681,8 @@ li .foto svg {
 }
 
 /* Botão grande de jogar de novo, no meio da tela */
-.de-novo-porquinhos {
+.de-novo-porquinhos,
+.de-novo-monstrinho {
   position: absolute;
   left: 50%;
   top: 38%;
@@ -1695,6 +1704,375 @@ li .foto svg {
 /* Celular deitado: tela baixa, chão mais fino */
 @media (max-height: 500px) {
   .porquinhos {
+    --chao: 12vh;
+  }
+}
+
+/* ---------- Monstrinho comilão ---------- */
+.monstrinho {
+  --chao: 18vh;
+  --arvore: min(50vw, 60vh); /* largura da árvore (ela é um pouco mais alta) */
+  --monstro: min(22vw, 26vh);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background: linear-gradient(#81d4fa, #e1f5fe);
+}
+
+.monstrinho .chao {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--chao);
+  background: #7cb342;
+  border-top: 6px solid #689f38;
+}
+
+/* A árvore fica à direita, com o pé enterradinho na grama */
+.monstrinho .arvore {
+  position: absolute;
+  right: 6vw;
+  bottom: calc(var(--chao) - var(--arvore) * 0.05);
+  z-index: 1;
+  width: var(--arvore);
+  aspect-ratio: 200 / 220;
+  transform-origin: 50% 100%;
+}
+
+.monstrinho .arvore svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Árvore nova: sobe do chão com um pulinho e as maçãs aparecem uma por uma */
+.monstrinho .arvore.brotando {
+  animation: brotar-arvore 1.1s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+@keyframes brotar-arvore {
+  from { transform: scale(0.1, 0); }
+}
+
+.monstrinho .arvore.comida {
+  visibility: hidden;
+}
+
+/* As maçãs: a caixa de toque é bem maior que a maçã, para ser fácil de acertar */
+.monstrinho .maca {
+  position: absolute;
+  width: 20%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  translate: -50% -50%;
+  transform-origin: 50% 15%;
+  animation: balancar-maca 1.6s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.35s);
+}
+
+.monstrinho .maca svg {
+  width: 72%;
+  pointer-events: none;
+}
+
+@keyframes balancar-maca {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}
+
+.monstrinho .arvore.brotando .maca {
+  animation: balancar-maca 1.6s ease-in-out infinite alternate, aparecer-maca 0.4s cubic-bezier(0.3, 1.8, 0.5, 1) backwards;
+  animation-delay: calc(var(--i) * -0.35s), calc(0.9s + var(--i) * 0.15s);
+}
+
+@keyframes aparecer-maca {
+  from { scale: 0; }
+}
+
+/* Dica quando ela demora: a maçã pula chamando */
+.monstrinho .maca.chamando {
+  animation: balancar-maca 1.6s ease-in-out infinite alternate, chamar-maca 0.25s ease-in-out 6 alternate;
+}
+
+@keyframes chamar-maca {
+  to { scale: 1.25; }
+}
+
+/* A maçã que soltou do galho (agora solta na cena, movida pelo JavaScript) */
+.monstrinho .maca.caindo {
+  z-index: 4;
+  translate: none;
+  transform-origin: 50% 50%;
+  animation: none;
+  pointer-events: none;
+}
+
+/* O monstrinho fica no chão, à esquerda */
+.monstrinho .monstro {
+  position: absolute;
+  left: 8vw;
+  bottom: calc(var(--chao) - var(--monstro) * 0.08);
+  z-index: 3;
+  width: var(--monstro);
+  aspect-ratio: 140 / 130;
+}
+
+.monstrinho .pulo {
+  width: 100%;
+  height: 100%;
+}
+
+.monstrinho .pulo.pulando {
+  animation: pular-monstro 0.3s ease-out infinite alternate;
+}
+
+@keyframes pular-monstro {
+  to { transform: translateY(-22%); }
+}
+
+.monstrinho .pulo.pulinho {
+  animation: pulinho-monstro 0.5s ease-out;
+}
+
+@keyframes pulinho-monstro {
+  40% { transform: translateY(-30%) scale(1.05, 0.95); }
+}
+
+.monstrinho .corpo-monstro {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 100%;
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.monstrinho .corpo-monstro svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  animation: respirar-monstro 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes respirar-monstro {
+  to { transform: scale(1.03, 0.97); }
+}
+
+/* Na hora de comer a árvore ele fica enorme */
+.monstrinho .corpo-monstro.gigante {
+  transform: scale(2.3);
+}
+
+/* Barriga cheia: o corpo fica redondão */
+.monstrinho .barriga-monstro {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.monstrinho .cheio .barriga-monstro {
+  transform: scale(1.25, 1.12);
+}
+
+/* Para onde ele olha (as pupilas andam um pouquinho) */
+.monstrinho .pupilas-monstro {
+  transform: translate(var(--olhar-x, 0), var(--olhar-y, 0));
+  transition: transform 0.3s;
+}
+
+.monstrinho .olha-cima { --olhar-x: 3px; --olhar-y: -7px; }
+.monstrinho .olha-frente { --olhar-x: 0px; --olhar-y: 2px; }
+.monstrinho .olha-arvore { --olhar-x: 7px; --olhar-y: 3px; }
+
+.monstrinho .olhos-monstro {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transition: transform 0.25s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+.monstrinho .animado .olhos-monstro {
+  transform: scale(1.12);
+}
+
+/* Olhos arregalados quando ele vê que a árvore parece gostosa */
+.monstrinho .arregalado .olhos-monstro,
+.monstrinho .bocao .olhos-monstro {
+  transform: scale(1.35);
+}
+
+/* Pisca de vez em quando */
+.monstrinho .palpebra {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+  animation: piscar-monstro 4s infinite;
+}
+
+@keyframes piscar-monstro {
+  0%, 92%, 100% { transform: scaleY(0); }
+  96% { transform: scaleY(1); }
+}
+
+/* Feliz: olhinhos fechados de alegria (^ ^) */
+.monstrinho .olhos-felizes {
+  display: none;
+}
+
+.monstrinho .feliz .olhos-felizes {
+  display: inline;
+}
+
+.monstrinho .feliz .olhos-monstro {
+  display: none;
+}
+
+/* A boca: sorriso parado; abre para comer; bocão gigante para a árvore */
+.monstrinho .bocona {
+  transform-box: fill-box;
+  transform-origin: 50% 30%;
+  transform: scale(0);
+  transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.monstrinho .comendo .bocona {
+  transform: scale(1.1);
+}
+
+.monstrinho .bocao .bocona {
+  transform: scale(2.4);
+}
+
+.monstrinho .mastigando .bocona {
+  transition: none;
+  animation: mastigar 0.16s ease-in-out infinite alternate;
+}
+
+@keyframes mastigar {
+  from { transform: scale(0.9, 0.15); }
+  to { transform: scale(0.9, 0.6); }
+}
+
+.monstrinho .comendo .sorriso,
+.monstrinho .bocao .sorriso,
+.monstrinho .mastigando .sorriso,
+.monstrinho .comendo .baba,
+.monstrinho .bocao .baba,
+.monstrinho .mastigando .baba {
+  display: none;
+}
+
+/* Babando de vontade enquanto espera */
+.monstrinho .baba {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+
+.monstrinho.com-fome .baba {
+  animation: pingar-baba 1.8s ease-in infinite;
+}
+
+@keyframes pingar-baba {
+  0% { opacity: 0; transform: scaleY(0.4); }
+  20% { opacity: 1; }
+  75% { opacity: 1; transform: translateY(5px) scaleY(1.3); }
+  100% { opacity: 0; transform: translateY(16px) scaleY(1); }
+}
+
+/* Passando a mão na barriga cheia */
+.monstrinho .braco {
+  transform-box: view-box;
+}
+
+.monstrinho .braco-esq {
+  transform-origin: 24px 82px;
+}
+
+.monstrinho .braco-dir {
+  transform-origin: 116px 82px;
+}
+
+.monstrinho .esfregando .braco-dir {
+  animation: esfregar-dir 0.35s ease-in-out infinite alternate;
+}
+
+.monstrinho .esfregando .braco-esq {
+  animation: esfregar-esq 0.35s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes esfregar-dir {
+  from { transform: rotate(35deg); }
+  to { transform: rotate(75deg); }
+}
+
+@keyframes esfregar-esq {
+  from { transform: rotate(-35deg); }
+  to { transform: rotate(-75deg); }
+}
+
+/* O "ué?" em cima da cabeça */
+.monstrinho .duvida {
+  position: absolute;
+  right: -12%;
+  top: -38%;
+  width: calc(var(--monstro) * 0.42);
+  height: calc(var(--monstro) * 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: bold calc(var(--monstro) * 0.32) / 1 Arial, Helvetica, sans-serif;
+  color: #8e24aa;
+  background: white;
+  border: 4px solid #8e24aa;
+  border-radius: 50%;
+  scale: 0;
+  transition: scale 0.3s cubic-bezier(0.3, 1.8, 0.5, 1);
+  pointer-events: none;
+}
+
+.monstrinho .duvida.aparece {
+  scale: 1;
+  animation: balancar-maca 0.5s ease-in-out infinite alternate;
+}
+
+/* Pedacinhos de maçã voando da boca */
+.pedaco.migalha {
+  border-radius: 40%;
+}
+
+/* Fumaça de desenho animado quando a árvore some */
+.pedaco.nuvem {
+  z-index: 6;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: inset -6px -6px 0 rgba(190, 190, 190, 0.7);
+  animation-name: subir-fumaca;
+}
+
+/* Celular em pé: sobra céu, então o chão sobe e a árvore fica maior */
+@media (orientation: portrait) {
+  .monstrinho {
+    --chao: 30vh;
+    --arvore: min(78vw, 48vh);
+    --monstro: min(30vw, 22vh);
+  }
+
+  .monstrinho .arvore {
+    right: 2vw;
+  }
+
+  .monstrinho .monstro {
+    left: 4vw;
+  }
+}
+
+/* Celular deitado: tela baixa, chão mais fino */
+@media (max-height: 500px) {
+  .monstrinho {
     --chao: 12vh;
   }
 }
