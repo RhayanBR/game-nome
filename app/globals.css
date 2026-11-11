@@ -1904,7 +1904,7 @@ li .foto svg {
 
 /* Deitado no chão de barriga para cima: troca para o desenho deitado,
    que cai de costas com um tombinho e fica com a barrigona subindo e descendo */
-.monstrinho .monstro-deitado {
+.monstrinho .corpo-monstro .monstro-deitado {
   display: none;
 }
 

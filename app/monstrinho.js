@@ -810,7 +810,8 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
     }
   }
 
-  // Tocar no monstrinho: ele dá um pulinho e pede comida (no fim, arrota)
+  // Tocar no monstrinho: ele dá um pulo para o lado, rindo (no fim, arrota).
+  // Ela pode continuar tocando nas frutas enquanto ele pula.
   function tocarNoMonstro(evento) {
     evento.preventDefault();
     sons.acordar();
@@ -820,8 +821,17 @@ function iniciarMonstrinho(raiz, aoVencer, brotar) {
       return;
     }
     if (estado !== "esperando" || voz.falando) return;
-    trocarClasse(pulo, "pulinho");
-    voz.falar("Eu quero mais!");
+    // Pode pular pela tela toda (passa na frente do tronco; as frutas ficam lá no alto)
+    const largura = caixa(monstro).w;
+    const minimo = largura * 0.6;
+    const maximo = raiz.clientWidth - largura * 0.6;
+    const atual = monstro._base + (monstro._x || 0);
+    const passo = raiz.clientWidth * (0.12 + Math.random() * 0.1);
+    // Vai para o lado que tem mais espaço
+    const destino = atual - minimo > maximo - atual ? atual - passo : atual + passo;
+    sons.pop();
+    voz.falar("Hihi!");
+    irPulando(Math.min(maximo, Math.max(minimo, destino)), null);
   }
 
   const acordar = () => sons.acordar();
