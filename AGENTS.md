@@ -2,7 +2,7 @@
 
 ## O que é este projeto
 
-Apesar do nome do repositório (`clone-tabnews-ai`) e do README (clone do tabnews.com.br para o curso.dev), este é um **app de brincadeiras educativas para uma criança pequena** (a Julia), em português do Brasil. A criança toca na tela, a voz do navegador fala, e os jogos ensinam letras, palavras e nomes de bichos.
+Este é um **app de brincadeiras educativas para uma criança pequena** (a Julia), em português do Brasil. A criança toca na tela, a voz do navegador fala, e os jogos ensinam letras, palavras e nomes de bichos.
 
 - Público: criança que ainda não lê. Tudo precisa funcionar só com toque + voz, sem texto para ler.
 - Uso principal: celular/tablet (em pé e deitado). Toques grandes, nada de rolagem.
